@@ -54,29 +54,14 @@ class BlockImages:
 
 
 class Block:
-    def __init__(self, block_type: 'BlockType', texture: pygame.surface.Surface) -> None:
+    def __init__(self, block_type: 'BlockType') -> None:
         self.type = block_type
-        self.cur_texture = texture
-        # self.x, self.y, self.width, self.height = x, y, 128, 128
-        # self.is_empty = True
-
-    # @property
-    # def rect(self) -> pygame.rect.Rect:
-    #     return pygame.rect.Rect(self.x, self.y, self.width, self.height)
-    # @rect.setter
-    # def rect(self, value: pygame.rect.Rect):
-    #     self.x, self.y, self.width, self.height = int(value.x), int(value.y), int(value.w), int(value.h)
-
-    # def draw(self, win: pygame.surface.Surface) -> None:
-    #     # if not self.is_empty: win.blit(self.cur_texture,self.rect)
-    #     if self.block_type == BlockType.GROUND:
-    #         pygame.draw.rect(win, (0,0,0), self.rect)
-    #     pygame.draw.rect(win, (0,0,0), self.rect, 2)
+        self.texture: pygame.surface.Surface
 
 class Grid:
     def __init__(self, width: int, height: int) -> None:
         self.width, self.height = width, height
-        self.grid = [[Block(BlockType.AIR, BlockImages.air) for w in range(width)] for h in range(height)]
+        self.grid = [[Block(BlockType.AIR) for w in range(width)] for h in range(height)]
         for block in self.grid[-1]:
             block.type = BlockType.GROUND
 
@@ -92,7 +77,7 @@ class Grid:
                 if self.grid[y][x].type == BlockType.GROUND:
                     pygame.draw.rect(win, (0,0,0), (x*block_size,y*block_size,block_size,block_size))
                 pygame.draw.rect(win, (0,0,0), (x*block_size,y*block_size,block_size,block_size), 2)
-                # self.grid[y][x].draw(win)
+
 
 class Player:
     def __init__(self, x: float, y: float, w: int, h: int) -> None:
