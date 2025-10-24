@@ -1,4 +1,4 @@
-import pygame
+import pygame, pathlib
 
 class Platform:
     def __init__(self, x: float, y: float, w: int, h: int, col: tuple[int,int,int]) -> None:
@@ -13,7 +13,7 @@ class Platform:
         pygame.draw.rect(win, self.color, self.rect)
 
 class Player:
-    def __init__(self, x: float, y: float, w: int, h: int, col: tuple[int,int,int]) -> None:
+    def __init__(self, x: float, y: float, w: int, h: int, col: tuple[int,int,int], tex: list[pathlib.Path]) -> None:
         self.width, self.height = w, h
         self.color = col
 
@@ -21,6 +21,10 @@ class Player:
         self.x_vel, self.y_vel = 0, 0
 
         self.rect = pygame.rect.Rect(self.x, self.y, self.width, self.height)
+        
+        self.texture_counter = 0
+        self.textures = [pygame.transform.scale_by(pygame.image.load(tex_path),4) for tex_path in tex]
+        self.cur_texture = 0
 
     def move(self, x: float, y: float) -> None:
         self.x += x
@@ -30,14 +34,15 @@ class Player:
         self.rect.y = int(self.y)
 
     def collision(self, platform: Platform) -> bool:
-        
+
         if self.x + self.width + self.x_vel > platform.x and self.y + self.height + self.y_vel > platform.y:
             if platform.x + platform.width > self.x + self.x_vel and platform.y + platform.height > self.y + self.y_vel:
                 return True
         return False
 
     def draw(self, win: pygame.surface.Surface) -> None:
-        pygame.draw.rect(win, self.color, self.rect)
+        # pygame.draw.rect(win, self.color, self.rect)
+        win.blit(self.textures[self.cur_texture],self.rect)
 
     def update(self) -> None:
         # velocity
@@ -45,6 +50,11 @@ class Player:
         self.x_vel *= P_SLIDE
 
         self.move(self.x_vel,self.y_vel)
+        
+        # texture
+        self.texture_counter += 1
+        if self.texture_counter == 120:
+            self.cur_texture = (self.cur_texture + 1) % len(self.textures)
 
 ################################################################################################################
 
@@ -70,7 +80,7 @@ def update(player: Player) -> None:
 def main(window: pygame.surface.Surface):
     # width, height = window.get_size()
 
-    player = Player(0, 0, P_W, P_H, P_COL)
+    player = Player(0, 0, P_W, P_H, P_COL, P_TEX)
     platforms = [Platform(50, 800, 1500, 50, (0, 255, 255))]
 
     run, clock = True, pygame.time.Clock()
@@ -92,15 +102,19 @@ def main(window: pygame.surface.Surface):
 
 if __name__ == '__main__':
     # globals
-    P_W, P_H = 45, 60
+    P_W, P_H = 128, 128
     P_COL = (255,255,255)
     P_JUMP = 20
     P_SPEED = 5
     P_SLIDE = 0.8
 
-    
+    base = pathlib.Path(__file__).parent.parent / "Textures"
+    P_TEX = [
+        base / "Glop.png",
+        base / "glop_idle2.png"
+    ]
 
-    gravity = 2
+    gravity = 0
 
     window = pygame.display.set_mode((1600,900))
 
