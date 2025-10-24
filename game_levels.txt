@@ -1,0 +1,36 @@
+
+1. Level:
+    - bez dev modu (jen platformer)
+    - spiky a platformy parkur - simple
+
+2. Level:
+    - ukázka dev modu, velká plocha spiků
+    - vyřešení v dev modu:
+        if globe touch spike:
+            death
+        ... platform
+
+DEV MODE ALL:
+
+možnosti:
+    - led
+    - med
+
+ideas:
+    - Zapnutí dev modu jen ve vzduchu (jump)
+    - změnění pozice coinu
+
+3. Level:
+    - spawn na medu
+    - v dev modu vyrušit med
+    - skočit na platformu nad spikama s ledem
+    - na platformě v dev modu zrušit led
+    - skočit na druhiu stranu
+
+4. Level:
+    - coin ve czduchu (nedosažitelný skokem)
+    - v dev modu změnit pozici coinu nebo zvýšit jump
+
+5. Level:
+    - if globe death
+        new level
