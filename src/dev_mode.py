@@ -1,10 +1,29 @@
 import pygame
+from enum import Enum, auto
 
-class Dev:
+class BlockType(Enum):
+    Empty = auto()
+    If_statement = auto()
+
+class Block:
+    def __init__(self, type: 'BlockType'):
+        self.type = type
+
+class Grid:
+    def __init__(self, width: int, height: int) -> None:
+        self.grid = [[Block(BlockType.Empty) for _ in range(width)] for _ in range(height)]
+    def get_block(self, x:int, y:int) -> 'BlockType':
+        return self.grid[y][x].type
+    def set_block(self, x: int, y: int, type: 'BlockType') -> None:
+        self.grid[y][x].type = type
+    def delete_block(self, x:int, y: int) -> None:
+        self.grid[y][x].type = BlockType.Empty
+
+class DevPlayer:
     def __init__(self) -> None:
         pass
 
-def draw(window: pygame.surface.Surface, width:int, height:int, font: pygame.font.Font):
+def draw_game(window: pygame.surface.Surface, width:int, height:int, font: pygame.font.Font):
     window.fill((255,255,255))
     s = 4
     txt = font.render("Dev Mode", 1, (0,0,0))
@@ -19,7 +38,9 @@ def main(window: pygame.surface.Surface):
     
     run, clock = True, pygame.time.Clock()
     while run:
-        draw(window, width, height, font)
+        
+        draw_game(window, width, height, font)
+        
         pygame.display.update()
         clock.tick(60)
         for event in pygame.event.get():
