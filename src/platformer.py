@@ -1,10 +1,16 @@
 import pygame, pathlib
 
-class Platform:
-    def __init__(self, x: float, y: float, w: int, h: int, col: tuple[int,int,int]) -> None:
-        self.color = col
-        self.x, self.y, self.width, self.height = x,y,w,h
-    
+class Block:
+    # AIR = 0
+    # GROUND = 1
+    # PLATFORM = 2
+    # SPIKE = 3
+    def __init__(self, x: float, y: float, texture: pygame.surface.Surface, block_type: int) -> None:
+        self.x, self.y, self.width, self.height = x, y, 128, 128
+        self.block_type = block_type
+        self.cur_texture = texture
+        self.is_empty = True
+
     @property
     def rect(self) -> pygame.rect.Rect:
         return pygame.rect.Rect(self.x, self.y, self.width, self.height)
@@ -13,7 +19,29 @@ class Platform:
         self.x, self.y, self.width, self.height = int(value.x), int(value.y), int(value.w), int(value.h)
 
     def draw(self, win: pygame.surface.Surface) -> None:
-        pygame.draw.rect(win, self.color, self.rect)
+        if not self.is_empty: win.blit(self.cur_texture,self.rect)
+
+class Grid:
+    def __init__(self, width: int, height: int, tex_pack: list[list[pathlib.Path]]) -> None:
+        self.width, self.height = width, height
+        self.textures = {
+            "air": [pygame.transform.scale_by(pygame.image.load(tex_path),4) for tex_path in tex_pack[0]],
+            "ground": [pygame.transform.scale_by(pygame.image.load(tex_path),4) for tex_path in tex_pack[1]],
+            "platform": [pygame.transform.scale_by(pygame.image.load(tex_path),4) for tex_path in tex_pack[2]],
+            "spike": [pygame.transform.scale_by(pygame.image.load(tex_path),4) for tex_path in tex_pack[3]]
+        }
+        self.grid = [[Block(h * 128, w * 128, self.textures["air"][0], 0) for w in range(width)] for h in range(height)]
+
+    def get_block(self, x: int, y: int) -> int:
+        return self.grid[y][x].block_type
+    
+    def set_block(self, x: int, y: int, block_type: int) -> None:
+        self.grid[y][x].block_type = block_type
+
+    def draw(self, win: pygame.surface.Surface) -> None:
+        for y in range(self.height):
+            for x in range(self.width):
+                self.grid[y][x].draw(win)
 
 class Player:
     def __init__(self, x: float, y: float, w: int, h: int, tex_pack: list[list[pathlib.Path]]) -> None:
@@ -48,17 +76,18 @@ class Player:
     def draw(self, win: pygame.surface.Surface) -> None:
         win.blit(self.texturess[self.cur_textures][self.cur_texture],self.rect)
 
-    def update(self, keys: pygame.key.ScancodeWrapper, platforms: list[Platform]) -> None:
-        if keys[pygame.K_w]:
+    def update(self, keys: pygame.key.ScancodeWrapper, platforms: list[Block]) -> None:
+        if keys[pygame.K_w] or keys[pygame.K_UP]:
             if self.on_ground: self.y_vel = -P_JUMP
-        if keys[pygame.K_a]: self.x_vel -= P_SPEED
-        if keys[pygame.K_d]: self.x_vel += P_SPEED
+        if keys[pygame.K_a] or keys[pygame.K_LEFT]: self.x_vel -= P_SPEED
+        if keys[pygame.K_d] or keys[pygame.K_RIGHT]: self.x_vel += P_SPEED
 
-        # velocity
+    # velocity
         self.y_vel += gravity
         if abs(self.x_vel) < 0.1: self.x_vel = 0
         else: self.x_vel *= P_SLIDE
 
+    # collision
         self.on_wall = False
         self.x_updated_rect = self.rect
         self.x_updated_rect.x += int(self.x_vel)
@@ -81,7 +110,7 @@ class Player:
         else:
             self.y += self.y_vel
 
-        # state        
+    # state        
         if self.x_vel == 0 and self.y_vel == 0:
             self.state = "base"
             self.stop_counter += 1
@@ -99,7 +128,7 @@ class Player:
 
         self.cur_textures = self.state
 
-        # texture
+    # texture
         match self.state:
             case "base":
                 self.cur_texture = 0
@@ -130,11 +159,6 @@ class Player:
 
             case _: pass
 
-        if self.state == "idle": self.texture_counter += 1
-        if self.texture_counter == 60:
-            self.cur_texture = (self.cur_texture + 1) % len(self.texturess["idle"])
-            self.texture_counter = 0
-
 ################################################################################################################
 
 # def check_keys(player: Player) -> None:
@@ -144,13 +168,15 @@ class Player:
 #     if keys_pressed[pygame.K_a]: player.x_vel -= P_SPEED
 #     if keys_pressed[pygame.K_d]: player.x_vel += P_SPEED
 
-def draw(win: pygame.surface.Surface, player: Player, platforms: list[Platform]) -> None:
+def draw(win: pygame.surface.Surface, player: Player, grid: Grid, platforms: list[Block]) -> None:
     for platform in platforms:
         platform.draw(win)
 
+    grid.draw(win)
+    
     player.draw(win)
 
-def update(player: Player, platforms: list[Platform]) -> None:
+def update(player: Player, platforms: list[Block]) -> None:
     keys = pygame.key.get_pressed()
     # check_keys(player)
     player.update(keys, platforms)
@@ -159,15 +185,16 @@ def update(player: Player, platforms: list[Platform]) -> None:
 
 def main(window: pygame.surface.Surface):
     # width, height = window.get_size()
-
+    
+    grid = Grid(100, 9, B_TEXTURE)
     player = Player(0, 0, P_W, P_H, P_TEX)
-    platforms = [Platform(50, 800, 1500, 50, (0,255,255))]
+    platforms = [Block(50, 800, pygame.transform.scale_by(pygame.image.load(B_TEXTURE[2][0]), 4), 2)]
 
     run, clock = True, pygame.time.Clock()
     while run:
         window.fill((0,0,0))
 
-        draw(window, player, platforms)
+        draw(window, player, grid, platforms)
         update(player, platforms)
 
         pygame.display.update()
@@ -215,7 +242,25 @@ if __name__ == '__main__':
     ]
     
     base = pathlib.Path(__file__).parent.parent / "Textures" / "Adventure" / "blocks"
-    PLATFORM_TEXTURE = []
+    B_TEXTURE = [
+        [
+            base / "cloud1.png",
+            base / "cloud2.png"
+        ],
+        [
+            base / "dirt_block.png",
+            base / "grass_inner_corner.png",
+            base / "grass.png",
+            base / "grass_outer_corner.png",
+            base / "grass_block.png"
+        ],
+        [
+            base / "platform.png"
+        ],
+        [
+            base / "spikes.png"
+        ]
+    ]
 
     gravity = 2
 
