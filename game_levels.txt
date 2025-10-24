@@ -28,7 +28,7 @@ ideas:
     - skočit na druhiu stranu
 
 4. Level:
-    - coin ve czduchu (nedosažitelný skokem)
+    - coin ve vzduchu (nedosažitelný skokem)
     - v dev modu změnit pozici coinu nebo zvýšit jump
 
 5. Level:

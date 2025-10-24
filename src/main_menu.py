@@ -9,6 +9,7 @@ background_image: pygame.surface.Surface = pygame.image.load(base / "main_screen
 help_button_image: pygame.surface.Surface = pygame.image.load(base / "help_button.png")
 start_button_image: pygame.surface.Surface = pygame.image.load(base / "start_button.png")
 quit_button_image: pygame.surface.Surface = pygame.image.load(base / "quit_button.png")
+logo_image: pygame.surface.Surface = pygame.image.load(base / "studio_logo.png")
 
 # Colors:
 BLACK: tuple[int, int, int] = (0, 0, 0)
@@ -56,6 +57,7 @@ start_button: Button
 help_button: Button
 quit_button: Button
 background: pygame.surface.Surface
+logo: pygame.surface.Surface
 
 button_scale: int = 5
 start_button_width: int = 64*button_scale
@@ -64,6 +66,10 @@ start_button_height: int = 32*button_scale
 side_button_height: int = 32*button_scale
 x_shift: int = 210
 y_shift: int = 80
+logo_width: int = 200
+logo_height: int = logo_width
+x_logo_offset: int = 40
+y_logo_offset: int = x_logo_offset//8
 
 transition_animation: bool = False
 animation_scale: int = 0
@@ -72,8 +78,9 @@ after_start_button: bool = False
 
 
 def initialize(width, height) -> None:
-    global start_button, help_button, quit_button, background
+    global start_button, help_button, quit_button, background, logo
     background = pygame.transform.scale(background_image, (width, height))
+    logo = pygame.transform.scale(logo_image, (logo_width, logo_height))
 
     help_button = Button(
         width//3//2 - side_button_width//2 + x_shift + 2,
@@ -132,6 +139,7 @@ def update() -> str:
 def draw() -> None:
     global transition_animation, animation_scale, after_help_button, after_start_button
     window.blit(background, (0, 0))
+    window.blit(logo, (window.get_width() - logo_width - x_logo_offset, window.get_height() - logo_height - y_logo_offset))
     start_button.draw(window)
     help_button.draw(window)
     quit_button.draw(window)
@@ -163,6 +171,6 @@ def main(window: pygame.surface.Surface):
                     run = False
 
 if __name__ == '__main__':
-    window = pygame.display.set_mode((1600,900))
+    window = pygame.display.set_mode((1600,900), pygame.FULLSCREEN)
     main(window)
     pygame.quit()
