@@ -1,4 +1,3 @@
 raylib
 requests
 numpy
-# fastapi
