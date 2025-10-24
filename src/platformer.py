@@ -3,25 +3,14 @@ import pygame, pathlib
 class Platform:
     def __init__(self, x: float, y: float, w: int, h: int, col: tuple[int,int,int]) -> None:
         self.color = col
-        self.rect = pygame.rect.Rect(self.x, self.y, self.width, self.height)
-
+        self.x, self.y, self.width, self.height = x,y,w,h
+    
     @property
-    def x(self) -> int: return self.rect.x
-    @x.setter
-    def x(self, value: int) -> None: self.rect.x = value
-    @property
-    def y(self) -> int: return self.rect.y
-    @y.setter
-    def y(self, value: int) -> None: self.rect.y = value
-
-    @property
-    def width(self) -> int: return self.rect.width
-    @width.setter
-    def width(self, value: int) -> None: self.rect.width = value
-    @property
-    def height(self) -> int: return self.rect.height
-    @height.setter
-    def height(self, value: int) -> None: self.rect.height = value
+    def rect(self) -> pygame.rect.Rect:
+        return pygame.rect.Rect(self.x, self.y, self.width, self.height)
+    @rect.setter
+    def rect(self, value: pygame.rect.Rect):
+        self.x, self.y, self.width, self.height = int(value.x), int(value.y), int(value.w), int(value.h)
 
     def draw(self, win: pygame.surface.Surface) -> None:
         pygame.draw.rect(win, self.color, self.rect)
@@ -34,37 +23,43 @@ class Player:
         self.x, self.y = x, y
         self.x_vel, self.y_vel = 0, 0
 
-        self.rect = pygame.rect.Rect(self.x, self.y, self.width, self.height)
-        
         self.texture_counter = 0
         self.textures = [pygame.transform.scale_by(pygame.image.load(tex_path),4) for tex_path in tex]
         self.cur_texture = 0
 
-    def move(self, x: float, y: float) -> None:
-        self.x += x
-        self.y += y
-        
-        self.rect.x = int(self.x)
-        self.rect.y = int(self.y)
-
-    def collision(self, platform: Platform) -> bool:
-
-        if self.x + self.width + self.x_vel > platform.x and self.y + self.height + self.y_vel > platform.y:
-            if platform.x + platform.width > self.x + self.x_vel and platform.y + platform.height > self.y + self.y_vel:
-                return True
-        return False
+    @property
+    def rect(self) -> pygame.rect.Rect:
+        return pygame.rect.Rect(self.x, self.y, self.width, self.height)
+    @rect.setter
+    def rect(self, value: pygame.rect.Rect):
+        self.x, self.y, self.width, self.height = int(value.x), int(value.y), int(value.w), int(value.h)
 
     def draw(self, win: pygame.surface.Surface) -> None:
         # pygame.draw.rect(win, self.color, self.rect)
         win.blit(self.textures[self.cur_texture],self.rect)
 
-    def update(self) -> None:
+    def update(self, keys: pygame.key.ScancodeWrapper ,platforms: list[Platform]) -> None:
+        if keys[pygame.K_w]: self.y_vel = - P_JUMP
+        if keys[pygame.K_a]: self.x_vel -= P_SPEED
+        if keys[pygame.K_d]: self.x_vel += P_SPEED
         # velocity
         self.y_vel += gravity
         self.x_vel *= P_SLIDE
 
-        self.move(self.x_vel,self.y_vel)
-        
+        for platform in platforms: # x
+            if platform.rect.colliderect(self.rect):
+                self.x_vel = 0
+                break
+        else:
+            self.x += self.x_vel
+
+        for platform in platforms: # y
+            if platform.rect.colliderect(self.rect):
+                self.y_vel = 0
+                break
+        else:
+            self.y += self.y_vel
+
         # texture
         self.texture_counter += 1
         if self.texture_counter == 120:
@@ -72,12 +67,12 @@ class Player:
 
 ################################################################################################################
 
-def check_keys(player: Player) -> None:
-    keys_pressed = pygame.key.get_pressed()
+# def check_keys(player: Player) -> None:
+#     keys_pressed = pygame.key.get_pressed()
 
-    if keys_pressed[pygame.K_w]: player.y_vel = - P_JUMP
-    if keys_pressed[pygame.K_a]: player.x_vel -= P_SPEED
-    if keys_pressed[pygame.K_d]: player.x_vel += P_SPEED
+#     if keys_pressed[pygame.K_w]: player.y_vel = - P_JUMP
+#     if keys_pressed[pygame.K_a]: player.x_vel -= P_SPEED
+#     if keys_pressed[pygame.K_d]: player.x_vel += P_SPEED
 
 def draw(win: pygame.surface.Surface, player: Player, platforms: list[Platform]) -> None:
     for platform in platforms:
@@ -85,9 +80,10 @@ def draw(win: pygame.surface.Surface, player: Player, platforms: list[Platform])
 
     player.draw(win)
 
-def update(player: Player) -> None:
-    check_keys(player)
-    player.update()
+def update(player: Player, platforms: list[Platform]) -> None:
+    keys = pygame.key.get_pressed()
+    # check_keys(player)
+    player.update(keys, platforms)
 
 ################################################################################################################
 
@@ -102,7 +98,7 @@ def main(window: pygame.surface.Surface):
         window.fill((0,0,0))
 
         draw(window, player, platforms)
-        update(player)
+        update(player, platforms)
 
         pygame.display.update()
         clock.tick(60)
