@@ -1,14 +1,22 @@
-import pyray as ray
+import pygame
 
-width, height = 1600, 900
+def main(window: pygame.surface.Surface):
+    width, height = window.get_size()
+    
+    run, clock = True, pygame.time.Clock()
+    while run:
+        window.fill((255,255,255))
+        
+        pygame.display.update()
+        clock.tick(60)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    run = False
 
-ray.set_trace_log_level(ray.TraceLogLevel.LOG_WARNING)
-ray.init_window(width, height, "Project Name")
-
-ray.set_target_fps(60)
-
-while not ray.window_should_close():
-    ray.begin_drawing()
-    ray.clear_background(ray.WHITE)
-    ray.end_drawing()
-ray.close_window()
+if __name__ == '__main__':
+    window = pygame.display.set_mode((1600,900))
+    main(window)
+    pygame.quit()
