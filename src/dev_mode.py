@@ -6,15 +6,20 @@ class BlockType(Enum):
     Empty = auto()
     If_statement = auto()
 
+def _img_load_helper(path: pathlib.Path, size: int) -> pygame.surface.Surface:
+    return pygame.transform.scale(pygame.image.load(path), (size, size))
+
 class BlockImages:
-    def __init__(self):
+    def __init__(self, scale: int = 4):
         folder = pathlib.Path(__file__).parent.parent / "Textures"
+        self.scale = scale
+        self.block_size = 32 * scale
         self.images = {
-            BlockType.Empty : pygame.image.load(folder / "dev_block.png"),
-            BlockType.If_statement : pygame.image.load(folder / "if_block.png"),
+            BlockType.Empty : _img_load_helper(folder / "dev_block.png", self.block_size),
+            BlockType.If_statement : _img_load_helper(folder / "if_block.png", self.block_size),
         }
-    def get_image(self, btype: 'BlockType'):
-        self.images.get(btype, self.images[BlockType.If_statement])
+    def get_image(self, btype: 'BlockType') -> pygame.surface.Surface:
+        return self.images.get(btype, self.images[BlockType.If_statement])
 
 class Direction(Enum):
     RIGHT = auto()
@@ -38,17 +43,21 @@ class Grid:
     def delete_block(self, x:int, y: int) -> None:
         self.grid[y][x].type = BlockType.Empty
     def draw(self, surf: pygame.surface.Surface):
-        ...
+        for y, line in enumerate(self.grid):
+            for x, block in enumerate(line):
+                self.imgs.get_image(block.type)
+                
 
 class DevPlayer:
-    def __init__(self, x:int, y:int) -> None:
+    def __init__(self, x:int=0, y:int=0) -> None:
         self.x = x
         self.y = y
-        self.direction = 1
+        self.direction = Direction.NORMAL
 
 font: pygame.font.Font
 txt: pygame.surface.Surface
 txt_size: tuple[int,int]
+grid: Grid
 
 def initialize(width: int, height: int):
     global font
@@ -56,9 +65,11 @@ def initialize(width: int, height: int):
     global txt, txt_size
     txt = font.render("Dev Mode", 1, (0,0,0))
     txt_size = txt.get_size()
+    grid = Grid(15, 10, DevPlayer(0,0))
 
 def draw_game(window: pygame.surface.Surface, width:int, height:int):
-    window.fill((0,0,0))
+    window.fill((44,47,63))
+    pygame.draw.rect(window, (0,0,0), (0,0,width*0.1,height))
     # dev mode indicator
     pygame.draw.rect(window, (150, 150, 150), (0,0,width,txt_size[1]))
     window.blit(txt, (width*0.1 - txt_size[0]//2,0))
