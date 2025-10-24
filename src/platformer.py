@@ -30,8 +30,9 @@ class Player:
         self.rect.y = int(self.y)
 
     def collision(self, platform: Platform) -> bool:
-        if self.x + self.width > platform.x and self.y + self.height > platform.y:
-            if platform.x + platform.width > self.x and platform.y + platform.height > self.y:
+        
+        if self.x + self.width + self.x_vel > platform.x and self.y + self.height + self.y_vel > platform.y:
+            if platform.x + platform.width > self.x + self.x_vel and platform.y + platform.height > self.y + self.y_vel:
                 return True
         return False
 
