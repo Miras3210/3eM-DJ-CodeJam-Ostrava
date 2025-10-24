@@ -1,70 +1,111 @@
 import pygame, pathlib
+from enum import Enum, auto
+
+class BlockType(Enum):
+    AIR = auto()
+    GROUND = auto()
+    PLATFORM = auto()
+    SPIKE = auto()
+
+class PlayerSprite(Enum):
+    Base = auto()
+    Idle = auto()
+    Right = auto()
+    Left = auto()
+    Jump = auto()
+    Fall = auto()
+    Land = auto()
+
+image_scale = 4
+block_size = 32 * image_scale
+adventure_dir = pathlib.Path(__file__).parent.parent / "Textures" / "Adventure"
+char_dir = adventure_dir / "characters"
+
+def _img_load_helper(img_path: pathlib.Path) -> pygame.Surface:
+    return pygame.transform.scale(pygame.image.load(img_path), (block_size, block_size))
+
+class PlayerImages:
+    Base       = _img_load_helper(char_dir / "Glop.png")
+    Idle1      = _img_load_helper(char_dir / "glop_idle1.png")
+    Idle2      = _img_load_helper(char_dir / "glop_idle2.png")
+    Right      = _img_load_helper(char_dir / "glop_right.png")
+    Left       = _img_load_helper(char_dir / "glop_left.png")
+    Jump       = _img_load_helper(char_dir / "glop_long.png")
+    Jump_Right = _img_load_helper(char_dir / "glop_right_long.png")
+    Jump_Left  = _img_load_helper(char_dir / "glop_left_long.png")
+    Fall       = _img_load_helper(char_dir / "glop_fall.png")
+    Fall_Right = _img_load_helper(char_dir / "glop_right_fall.png")
+    Fall_Left  = _img_load_helper(char_dir / "glop_left_fall.png")
+    Land       = _img_load_helper(char_dir / "glop_short.png")
+
+block_dir = adventure_dir / "blocks"
+
+class BlockImages:
+    air                = _img_load_helper(block_dir / "air.png")
+    cloud1             = _img_load_helper(block_dir / "cloud1.png")
+    cloud2             = _img_load_helper(block_dir / "cloud2.png")
+    dirt_block         = _img_load_helper(block_dir / "dirt_block.png")
+    grass              = _img_load_helper(block_dir / "grass.png")
+    grass_inner_corner = _img_load_helper(block_dir / "grass_inner_corner.png")
+    grass_outer_corner = _img_load_helper(block_dir / "grass_outer_corner.png")
+    grass_block        = _img_load_helper(block_dir / "grass_block.png")
+    platform           = _img_load_helper(block_dir / "platform.png")
+    spikes             = _img_load_helper(block_dir / "spikes.png")
+
 
 class Block:
-    # AIR = 0
-    # GROUND = 1
-    # PLATFORM = 2
-    # SPIKE = 3
-    def __init__(self, x: float, y: float, texture: pygame.surface.Surface, block_type: int) -> None:
-        self.x, self.y, self.width, self.height = x, y, 128, 128
-        self.block_type = block_type
+    def __init__(self, block_type: 'BlockType', texture: pygame.surface.Surface) -> None:
+        self.type = block_type
         self.cur_texture = texture
-        self.is_empty = True
+        # self.x, self.y, self.width, self.height = x, y, 128, 128
+        # self.is_empty = True
 
-    @property
-    def rect(self) -> pygame.rect.Rect:
-        return pygame.rect.Rect(self.x, self.y, self.width, self.height)
-    @rect.setter
-    def rect(self, value: pygame.rect.Rect):
-        self.x, self.y, self.width, self.height = int(value.x), int(value.y), int(value.w), int(value.h)
+    # @property
+    # def rect(self) -> pygame.rect.Rect:
+    #     return pygame.rect.Rect(self.x, self.y, self.width, self.height)
+    # @rect.setter
+    # def rect(self, value: pygame.rect.Rect):
+    #     self.x, self.y, self.width, self.height = int(value.x), int(value.y), int(value.w), int(value.h)
 
-    def draw(self, win: pygame.surface.Surface) -> None:
-        if not self.is_empty: win.blit(self.cur_texture,self.rect)
+    # def draw(self, win: pygame.surface.Surface) -> None:
+    #     # if not self.is_empty: win.blit(self.cur_texture,self.rect)
+    #     if self.block_type == BlockType.GROUND:
+    #         pygame.draw.rect(win, (0,0,0), self.rect)
+    #     pygame.draw.rect(win, (0,0,0), self.rect, 2)
 
 class Grid:
-    def __init__(self, width: int, height: int, tex_pack: list[list[pathlib.Path]]) -> None:
+    def __init__(self, width: int, height: int) -> None:
         self.width, self.height = width, height
-        self.textures = {
-            "air": [pygame.transform.scale_by(pygame.image.load(tex_path),4) for tex_path in tex_pack[0]],
-            "ground": [pygame.transform.scale_by(pygame.image.load(tex_path),4) for tex_path in tex_pack[1]],
-            "platform": [pygame.transform.scale_by(pygame.image.load(tex_path),4) for tex_path in tex_pack[2]],
-            "spike": [pygame.transform.scale_by(pygame.image.load(tex_path),4) for tex_path in tex_pack[3]]
-        }
-        self.grid = [[Block(h * 128, w * 128, self.textures["air"][0], 0) for w in range(width)] for h in range(height)]
+        self.grid = [[Block(BlockType.AIR, BlockImages.air) for w in range(width)] for h in range(height)]
+        for block in self.grid[-1]:
+            block.type = BlockType.GROUND
 
-    def get_block(self, x: int, y: int) -> int:
-        return self.grid[y][x].block_type
-    
-    def set_block(self, x: int, y: int, block_type: int) -> None:
-        self.grid[y][x].block_type = block_type
+    def get_block(self, x: int, y: int) -> 'BlockType':
+        return self.grid[y][x].type
+
+    def set_block(self, x: int, y: int, block_type: 'BlockType') -> None:
+        self.grid[y][x].type = block_type
 
     def draw(self, win: pygame.surface.Surface) -> None:
         for y in range(self.height):
             for x in range(self.width):
-                self.grid[y][x].draw(win)
+                if self.grid[y][x].type == BlockType.GROUND:
+                    pygame.draw.rect(win, (0,0,0), (x*block_size,y*block_size,block_size,block_size))
+                pygame.draw.rect(win, (0,0,0), (x*block_size,y*block_size,block_size,block_size), 2)
+                # self.grid[y][x].draw(win)
 
 class Player:
-    def __init__(self, x: float, y: float, w: int, h: int, tex_pack: list[list[pathlib.Path]]) -> None:
+    def __init__(self, x: float, y: float, w: int, h: int) -> None:
         self.width, self.height = w, h
-
         self.x, self.y = x, y
         self.x_vel, self.y_vel = 0, 0
-        
-        self.on_wall, self.on_ground = False, False
-        
-        self.texturess = {
-            "base": [pygame.transform.scale_by(pygame.image.load(tex_path),4) for tex_path in tex_pack[0]],
-            "idle": [pygame.transform.scale_by(pygame.image.load(tex_path),4) for tex_path in tex_pack[1]],
-            "move": [pygame.transform.scale_by(pygame.image.load(tex_path),4) for tex_path in tex_pack[2]],
-            "jump": [pygame.transform.scale_by(pygame.image.load(tex_path),4) for tex_path in tex_pack[3]]
-        }
-        self.cur_textures = "base"
-        self.cur_texture = 0
-        self.state = "base"
 
-        self.texture_counter = 0
-        self.stop_counter = 0
-        self.fall_counter = 0
+        self.grid: 'Grid'
+
+        self.on_wall, self.on_ground = False, False
+
+        self.afk_counter = 0
+        self.on_ground_counter = 0
 
     @property
     def rect(self) -> pygame.rect.Rect:
@@ -74,11 +115,36 @@ class Player:
         self.x, self.y, self.width, self.height = int(value.x), int(value.y), int(value.w), int(value.h)
 
     def draw(self, win: pygame.surface.Surface) -> None:
-        win.blit(self.texturess[self.cur_textures][self.cur_texture],self.rect)
+        texture = PlayerImages.Base
+        if not self.on_ground: # in air
+            if self.y_vel < 0:
+                if self.x_vel > 5:
+                    texture = PlayerImages.Jump_Right
+                elif self.x_vel < -5:
+                    texture = PlayerImages.Jump_Left
+                else:
+                    texture = PlayerImages.Jump
+            else:
+                if self.x_vel > 5:
+                    texture = PlayerImages.Fall_Right
+                elif self.x_vel < -5:
+                    texture = PlayerImages.Fall_Left
+                else:
+                    texture = PlayerImages.Fall
+        elif self.on_ground_counter < 10 and abs(self.x_vel) < 5: # just fell down
+            texture = PlayerImages.Land
+        elif self.x_vel > 5: # right
+            texture = PlayerImages.Right
+        elif self.x_vel < -5: # left
+            texture = PlayerImages.Left
+        elif self.afk_counter >= 120:
+            texture = PlayerImages.Idle1 if (self.afk_counter // 30) % 2 else PlayerImages.Idle2
+        win.blit(texture,self.rect)
 
-    def update(self, keys: pygame.key.ScancodeWrapper, platforms: list[Block]) -> None:
+    def update(self, keys: pygame.key.ScancodeWrapper) -> None:
         if keys[pygame.K_w] or keys[pygame.K_UP]:
-            if self.on_ground: self.y_vel = -P_JUMP
+            if self.on_ground:
+                self.y_vel = -P_JUMP
         if keys[pygame.K_a] or keys[pygame.K_LEFT]: self.x_vel -= P_SPEED
         if keys[pygame.K_d] or keys[pygame.K_RIGHT]: self.x_vel += P_SPEED
 
@@ -88,114 +154,82 @@ class Player:
         else: self.x_vel *= P_SLIDE
 
     # collision
-        self.on_wall = False
         self.x_updated_rect = self.rect
         self.x_updated_rect.x += int(self.x_vel)
-        for platform in platforms: # x
-            if platform.rect.colliderect(self.x_updated_rect):
-                self.x_vel = 0
-                self.on_wall = True
-                break
+        for y, line in enumerate(self.grid.grid):
+            for x, block in enumerate(line):
+                if block.type == BlockType.GROUND and self.x_updated_rect.colliderect((x*block_size, y*block_size, block_size, block_size)):
+                    self.x_vel = 0
+                    self.on_wall = True
+                    break
+            else: continue
+            break
         else:
-            self.x += self.x_vel
+            self.x += int(self.x_vel)
+            self.on_wall = False
 
-        self.on_ground = False
         self.y_updated_rect = self.rect
         self.y_updated_rect.y += int(self.y_vel)
-        for platform in platforms: # y
-            if platform.rect.colliderect(self.y_updated_rect):
-                self.y_vel = 0
-                self.on_ground = True
-                break
+        for y, line in enumerate(self.grid.grid):
+            for x, block in enumerate(line):
+                if block.type == BlockType.GROUND and self.y_updated_rect.colliderect((x*block_size, y*block_size, block_size, block_size)):
+                    self.y_vel = 0
+                    if self.on_ground and self.on_ground_counter < 150:
+                        self.on_ground_counter+= 1
+                    self.on_ground = True
+                    break
+            else: continue
+            break
         else:
-            self.y += self.y_vel
+            self.y += int(self.y_vel)
+            self.on_ground = False
+            self.on_ground_counter = 0
 
-    # state        
-        if self.x_vel == 0 and self.y_vel == 0:
-            self.state = "base"
-            self.stop_counter += 1
-
-        if not self.x_vel == 0:
-            self.state = "move"
-            self.stop_counter = 0
-
-        if not self.y_vel == 0 or self.fall_counter < 10:
-            self.state = "jump"
-            self.stop_counter = 0
-
-        if self.stop_counter > 120:
-            self.state = "idle"
-
-        self.cur_textures = self.state
-
-    # texture
-        match self.state:
-            case "base":
-                self.cur_texture = 0
-
-            case "idle":
-                self.texture_counter += 1
-
-                if self.texture_counter == 60:
-                    self.cur_texture = (self.cur_texture + 1) % len(self.texturess["idle"])
-                    self.texture_counter = 0
-
-            case "move":
-                if self.x_vel < -5: self.cur_texture = 1
-                elif self.x_vel > 5: self.cur_texture = 2
-                else: self.cur_texture = 0
-
-            case "jump":
-                if self.y_vel < -10: self.cur_texture = 0
-                elif self.y_vel > 10: self.cur_texture = 3
-
-                else:
-                    if self.on_ground: self.fall_counter += 1
-                    else: self.fall_counter = 0
-                    self.cur_texture = 6
-
-                if self.x_vel < -5: self.cur_texture += 1
-                elif self.x_vel > 5: self.cur_texture += 2
-
-            case _: pass
+        if self.y_vel == 0 and self.x_vel == 0:
+            self.afk_counter+= 1
+            if self.afk_counter == 180:
+                self.afk_counter = 120
+        else:
+            self.afk_counter = 0
 
 ################################################################################################################
 
-# def check_keys(player: Player) -> None:
-#     keys_pressed = pygame.key.get_pressed()
+pygame.font.init()
+font = pygame.font.SysFont("Arial Black", 24)
+player: Player
+grid: Grid
 
-#     if keys_pressed[pygame.K_w]: player.y_vel = - P_JUMP
-#     if keys_pressed[pygame.K_a]: player.x_vel -= P_SPEED
-#     if keys_pressed[pygame.K_d]: player.x_vel += P_SPEED
+def initialize(width: int, height: int):
+    global player, grid
+    grid = Grid(100, 7)
+    grid.set_block(2,5,BlockType.GROUND)
+    player = Player(0, 0, block_size, block_size)
+    player.grid = grid
 
-def draw(win: pygame.surface.Surface, player: Player, grid: Grid, platforms: list[Block]) -> None:
-    for platform in platforms:
-        platform.draw(win)
+def draw(win: pygame.surface.Surface, player: Player, grid: Grid) -> None:
+    win.fill((255,255,255))
 
     grid.draw(win)
-    
-    player.draw(win)
 
-def update(player: Player, platforms: list[Block]) -> None:
+    player.draw(win)
+    win.blit(font.render(f"ground: {player.on_ground}", 1, (0,0,0)), (10, 10))
+    win.blit(font.render(f"ground: {player.y}", 1, (0,0,0)), (10, 35))
+    win.blit(font.render(f"afk: {player.y_vel}", 1, (0,0,0)), (10, 60))
+
+def update(player: Player) -> None:
     keys = pygame.key.get_pressed()
-    # check_keys(player)
-    player.update(keys, platforms)
+    player.update(keys)
 
 ################################################################################################################
 
 def main(window: pygame.surface.Surface):
-    # width, height = window.get_size()
-    
-    grid = Grid(100, 9, B_TEXTURE)
-    player = Player(0, 0, P_W, P_H, P_TEX)
-    platforms = [Block(50, 800, pygame.transform.scale_by(pygame.image.load(B_TEXTURE[2][0]), 4), 2)]
-
+    width, height = window.get_size()
     run, clock = True, pygame.time.Clock()
+    initialize(width, height)
     while run:
-        window.fill((0,0,0))
+        update(player)
 
-        draw(window, player, grid, platforms)
-        update(player, platforms)
+        draw(window, player, grid)
 
         pygame.display.update()
         clock.tick(60)
@@ -214,55 +248,7 @@ if __name__ == '__main__':
     P_SPEED = 3
     P_SLIDE = 0.8
 
-    base = pathlib.Path(__file__).parent.parent / "Textures" / "Adventure" / "characters"
-    P_TEX = [
-        [
-            base / "Glop.png"
-        ],
-        [
-            base / "glop_idle1.png",
-            base / "glop_idle2.png"
-        ],
-        [
-            base / "Glop.png",
-            base / "glop_left.png",
-            base / "glop_right.png"
-        ],
-        [
-            base / "glop_long.png",
-            base / "glop_left_long.png",
-            base / "glop_right_long.png",
-            base / "glop_fall.png",
-            base / "glop_left_fall.png",
-            base / "glop_right_fall.png",
-            base / "glop_short.png",
-            base / "glop_left.png",
-            base / "glop_right.png"
-        ]
-    ]
-    
-    base = pathlib.Path(__file__).parent.parent / "Textures" / "Adventure" / "blocks"
-    B_TEXTURE = [
-        [
-            base / "cloud1.png",
-            base / "cloud2.png"
-        ],
-        [
-            base / "dirt_block.png",
-            base / "grass_inner_corner.png",
-            base / "grass.png",
-            base / "grass_outer_corner.png",
-            base / "grass_block.png"
-        ],
-        [
-            base / "platform.png"
-        ],
-        [
-            base / "spikes.png"
-        ]
-    ]
-
-    gravity = 2
+    gravity = 1.5
 
     window = pygame.display.set_mode((1600,900))
 

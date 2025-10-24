@@ -46,9 +46,10 @@ class Button:
     def button_response(self) -> bool:
         if self.cursor_collision() and pygame.mouse.get_pressed()[0] and not self.response_sent:
             self.response_sent = True
+            return True
         elif not pygame.mouse.get_pressed()[0]:
             self.response_sent = False
-        return False
+            return False
 
 
 start_button: Button
@@ -162,6 +163,6 @@ def main(window: pygame.surface.Surface):
                     run = False
 
 if __name__ == '__main__':
-    window = pygame.display.set_mode((1600,900), pygame.FULLSCREEN)
+    window = pygame.display.set_mode((1600,900))
     main(window)
     pygame.quit()

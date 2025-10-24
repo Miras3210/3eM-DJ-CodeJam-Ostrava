@@ -233,6 +233,17 @@ def initialize(width: int, height: int):
     grid.set_block(2,2,BlockType.Death)
     grid.set_block(3,2,BlockType.Equal)
     grid.set_block(4,2,BlockType.Death)
+    grid.set_block(5,2,BlockType.Plus)
+    grid.set_block(6,2,BlockType.Minus)
+    
+    grid.set_block(2,3,BlockType.Num_0)
+    grid.set_block(3,3,BlockType.Num_1)
+    grid.set_block(4,3,BlockType.Num_2)
+    grid.set_block(5,3,BlockType.Num_3)
+    
+    grid.set_block(2,4,BlockType.Coin)
+    grid.set_block(3,4,BlockType.Spike)
+    
 
     global indicator
     indicator = pygame.transform.scale_by(pygame.image.load(dev_folder / "blocks" / "mode_dev.png"), 3)
