@@ -15,7 +15,7 @@ BLACK: tuple[int, int, int] = (0, 0, 0)
 
 
 class Button:
-    def __init__(self, x: int, y: int, width: int, height: int, image: pygame.image, max_hover_scale: int = 1.2) -> None:
+    def __init__(self, x: int, y: int, width: int, height: int, image: pygame.Surface, max_hover_scale: float = 1.2) -> None:
         self.rect = pygame.Rect(x, y, width, height)
         self.image = pygame.transform.scale(image, (self.rect.width, self.rect.height))
         self.scale = 1
@@ -46,9 +46,9 @@ class Button:
     def button_response(self) -> bool:
         if self.cursor_collision() and pygame.mouse.get_pressed()[0] and not self.response_sent:
             self.response_sent = True
-            return True
         elif not pygame.mouse.get_pressed()[0]:
             self.response_sent = False
+        return False
 
 
 start_button: Button
@@ -126,7 +126,7 @@ def update() -> str:
     start_button.update()
     help_button.update()
     quit_button.update()
-    
+    return ""
 
 def draw() -> None:
     global transition_animation, animation_scale, after_help_button, after_start_button
