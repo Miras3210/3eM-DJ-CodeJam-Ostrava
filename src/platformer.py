@@ -1,22 +1,107 @@
-import pyray as ray
+import pygame
+
+class Platform:
+    def __init__(self, x: float, y: float, w: int, h: int, col: tuple[int,int,int]) -> None:
+        self.width, self.height = w, h
+        self.color = col
+
+        self.x, self.y = x, y
+
+        self.rect = pygame.rect.Rect(self.x, self.y, self.width, self.height)
+
+    def draw(self, win: pygame.surface.Surface) -> None:
+        pygame.draw.rect(win, self.color, self.rect)
 
 class Player:
-    ...
+    def __init__(self, x: float, y: float, w: int, h: int, col: tuple[int,int,int]) -> None:
+        self.width, self.height = w, h
+        self.color = col
 
-def draw(width: int, height: int) -> None:
-    ray.draw_rectangle(0,0,width, height, ray.WHITE) # BG color set
+        self.x, self.y = x, y
+        self.x_vel, self.y_vel = 0, 0
 
-def main(width: int, height: int):
-    ray.set_target_fps(60)
-    while not ray.window_should_close():
-        ray.begin_drawing()
-        draw(width, height)
-        ray.end_drawing()
+        self.rect = pygame.rect.Rect(self.x, self.y, self.width, self.height)
 
-if __name__ == "__main__":
-    width, height = 1600, 900
+    def move(self, x: float, y: float) -> None:
+        self.x += x
+        self.y += y
+        
+        self.rect.x = int(self.x)
+        self.rect.y = int(self.y)
 
-    ray.set_trace_log_level(ray.TraceLogLevel.LOG_WARNING)
-    ray.init_window(width, height, "Project Name")
-    main(width, height)
-    ray.close_window()
+    def collision(self, platform: Platform) -> bool:
+        if self.x + self.width > platform.x and self.y + self.height > platform.y:
+            if platform.x + platform.width > self.x and platform.y + platform.height > self.y:
+                return True
+        return False
+
+    def draw(self, win: pygame.surface.Surface) -> None:
+        pygame.draw.rect(win, self.color, self.rect)
+
+    def update(self) -> None:
+        # velocity
+        self.y_vel += gravity
+        self.x_vel *= P_SLIDE
+
+        self.move(self.x_vel,self.y_vel)
+
+################################################################################################################
+
+def check_keys(player: Player) -> None:
+    keys_pressed = pygame.key.get_pressed()
+
+    if keys_pressed[pygame.K_w]: player.y_vel = - P_JUMP
+    if keys_pressed[pygame.K_a]: player.x_vel -= P_SPEED
+    if keys_pressed[pygame.K_d]: player.x_vel += P_SPEED
+
+def draw(win: pygame.surface.Surface, player: Player, platforms: list[Platform]) -> None:
+    for platform in platforms:
+        platform.draw(win)
+
+    player.draw(win)
+
+def update(player: Player) -> None:
+    check_keys(player)
+    player.update()
+
+################################################################################################################
+
+def main(window: pygame.surface.Surface):
+    # width, height = window.get_size()
+
+    player = Player(0, 0, P_W, P_H, P_COL)
+    platforms = [Platform(50, 800, 1500, 50, (0, 255, 255))]
+
+    run, clock = True, pygame.time.Clock()
+    while run:
+        window.fill((0,0,0))
+
+        draw(window, player, platforms)
+        update(player)
+
+        pygame.display.update()
+        clock.tick(60)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    run = False
+
+
+if __name__ == '__main__':
+    # globals
+    P_W, P_H = 45, 60
+    P_COL = (255,255,255)
+    P_JUMP = 20
+    P_SPEED = 5
+    P_SLIDE = 0.8
+
+    
+
+    gravity = 2
+
+    window = pygame.display.set_mode((1600,900))
+
+    main(window)
+    pygame.quit()
