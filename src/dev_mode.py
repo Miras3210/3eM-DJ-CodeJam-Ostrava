@@ -219,6 +219,9 @@ def initialize(width: int, height: int):
     grid.set_block(1,1,BlockType.If)
     grid.set_block(2,1,BlockType.Glop)
     grid.set_block(2,2,BlockType.Death)
+    grid.set_block(3,2,BlockType.Death)
+    grid.set_block(4,2,BlockType.Death)
+    grid.set_block(5,2,BlockType.Death)
 
     global indicator
     indicator = pygame.transform.scale_by(pygame.image.load(dev_folder / "blocks" / "mode_dev.png"), 3)
@@ -249,7 +252,6 @@ def update(key: int):
                     player.selected = not player.selected
                     player.select_dir = [PlayerDir.Up, PlayerDir.Right, PlayerDir.Down, PlayerDir.Left][dirs.index(direction)]
                     break
-        
         player.tick = 0
     elif player.direction != PlayerDir.Idle:
         player.tick+= 1
