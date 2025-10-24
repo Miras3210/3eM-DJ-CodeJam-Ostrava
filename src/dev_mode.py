@@ -3,8 +3,26 @@ from enum import Enum, auto
 import pathlib
 
 class BlockType(Enum):
+    Coin = auto()
+    Death = auto()
     Empty = auto()
-    If_statement = auto()
+    Equal = auto()
+    Glob = auto()
+    If = auto()
+    Locked = auto()
+    Minus = auto()
+    Num_0 = auto()
+    Num_1 = auto()
+    Num_2 = auto()
+    Num_3 = auto()
+    Num_4 = auto()
+    Num_5 = auto()
+    Num_6 = auto()
+    Num_7 = auto()
+    Num_8 = auto()
+    Num_9 = auto()
+    Plus = auto()
+    Spike = auto()
 
 def _img_load_helper(path: pathlib.Path, size: int) -> pygame.Surface:
     return pygame.transform.scale(pygame.image.load(path), (size, size))
@@ -13,13 +31,32 @@ class Image_storage:
     def __init__(self, scale: int = 4):
         self.scale = scale
         self.block_size = 32 * scale
-        block_folder = pathlib.Path(__file__).parent.parent / "Textures" / "Dev" / "blocks"
+        dev_folder = pathlib.Path(__file__).parent.parent / "Textures" / "Dev"
+        block_folder = dev_folder / "blocks"
         self.block_images = {
+            BlockType.Coin : _img_load_helper(block_folder / "coin_block.png", self.block_size),
             BlockType.Empty : _img_load_helper(block_folder / "dev_block.png", self.block_size),
-            BlockType.If_statement : _img_load_helper(block_folder / "if_block.png", self.block_size),
+            BlockType.Equal : _img_load_helper(block_folder / "equal_block.png", self.block_size),
+            BlockType.Death : _img_load_helper(block_folder / "death_block.png", self.block_size),
+            BlockType.Glob : _img_load_helper(block_folder / "glob_block.png", self.block_size),
+            BlockType.If : _img_load_helper(block_folder / "if_block.png", self.block_size),
+            BlockType.Locked : _img_load_helper(block_folder / "locked_overlay.png", self.block_size),
+            BlockType.Minus : _img_load_helper(block_folder / "minus_block.png", self.block_size),
+            BlockType.Num_0 : _img_load_helper(block_folder / "zero_block.png", self.block_size),
+            BlockType.Num_1 : _img_load_helper(block_folder / "one_block.png", self.block_size),
+            BlockType.Num_2 : _img_load_helper(block_folder / "two_block.png", self.block_size),
+            BlockType.Num_3 : _img_load_helper(block_folder / "three_block.png", self.block_size),
+            BlockType.Num_4 : _img_load_helper(block_folder / "four_block.png", self.block_size),
+            BlockType.Num_5 : _img_load_helper(block_folder / "five_block.png", self.block_size),
+            BlockType.Num_6 : _img_load_helper(block_folder / "six_block.png", self.block_size),
+            BlockType.Num_7 : _img_load_helper(block_folder / "seven_block.png", self.block_size),
+            BlockType.Num_8 : _img_load_helper(block_folder / "eight_block.png", self.block_size),
+            BlockType.Num_9 : _img_load_helper(block_folder / "nine_block.png", self.block_size),
+            BlockType.Plus : _img_load_helper(block_folder / "plus_block.png", self.block_size),
+            BlockType.Spike : _img_load_helper(block_folder / "spike_block.png", self.block_size),
         }
     def get_image(self, btype: 'BlockType') -> pygame.Surface:
-        return self.block_images.get(btype, self.block_images[BlockType.If_statement])
+        return self.block_images.get(btype, self.block_images[BlockType.If])
 
 class Direction(Enum):
     RIGHT = auto()
@@ -44,13 +81,24 @@ class Grid:
     def delete_block(self, x:int, y: int) -> None:
         self.grid[y][x].type = BlockType.Empty
     def draw(self, display: pygame.Surface, offset_x: int=0, offset_y: int=0,
-             scroll_x: int = 0, scroll_y: int = 0, max_x: int = -1, max_y: int = -1):
-        nsurf = pygame.Surface((min(max_x, self.width-scroll_x) if max_x!=-1 else self.width-scroll_x,
-                                min(max_y, self.height-scroll_y) if max_y!=-1 else self.height-scroll_y))
-        for y, line in enumerate(self.grid):
-            for x, block in enumerate(line):
-                nsurf.blit(self.imgs.get_image(block.type),(x*self.imgs.block_size -scroll_x, y*self.imgs.block_size - scroll_y))
+             scroll_x: int = 0, scroll_y: int = 0, max_x: int = 0, max_y: int = 0):
+        tile = self.imgs.block_size
 
+        vis_w = max_x if max_x else self.width * tile - scroll_x
+        vis_h = max_y if max_y else self.height * tile - scroll_y
+
+        nsurf = pygame.Surface((max_x if max_x else self.width * tile - scroll_x,
+                                max_y if max_y else self.height * tile - scroll_y),
+                               pygame.SRCALPHA)
+
+        for y in range(len(self.grid)):
+            for x in range(len(self.grid[0])):
+                img = self.imgs.get_image(self.grid[y][x].type)
+                draw_x = x * tile - scroll_x
+                draw_y = y * tile - scroll_y
+                nsurf.blit(img, (draw_x, draw_y))
+
+        # Draw the clipped result onto the main display
         display.blit(nsurf, (offset_x, offset_y))
 
 class DevPlayer:
@@ -73,6 +121,7 @@ def initialize(width: int, height: int):
 
     global grid
     grid = Grid(10,5, DevPlayer(0,0))
+    grid.set_block(1,1,BlockType.If)
 
 def draw_game(window: pygame.Surface, width:int, height:int):
     window.fill((44,47,63))
@@ -81,7 +130,7 @@ def draw_game(window: pygame.Surface, width:int, height:int):
     pygame.draw.rect(window, (150, 150, 150), (0,0,width,txt_size[1]))
     window.blit(txt, (width*0.1 - txt_size[0]//2,0))
     # draw grid
-    grid.draw(window, int(width*0.05), txt_size[1])
+    grid.draw(window, int(width*0.05), txt_size[1], 0, 0)
 
 def main(window: pygame.Surface):
     pygame.font.init()
