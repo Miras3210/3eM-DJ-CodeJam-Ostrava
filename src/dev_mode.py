@@ -43,16 +43,15 @@ class Grid:
         self.grid[y][x].type = btype
     def delete_block(self, x:int, y: int) -> None:
         self.grid[y][x].type = BlockType.Empty
-    def draw(self, surf: pygame.Surface, offset_x: int=0, offset_y: int=0,
-             scroll_x: int = 0, scroll_y: int = 0, max_x: int = -1, max_y: int = -1
-             ):
-        nsurf = pygame.Surface((self.width, self.height))
+    def draw(self, display: pygame.Surface, offset_x: int=0, offset_y: int=0,
+             scroll_x: int = 0, scroll_y: int = 0, max_x: int = -1, max_y: int = -1):
+        nsurf = pygame.Surface((min(max_x, self.width-scroll_x) if max_x!=-1 else self.width-scroll_x,
+                                min(max_y, self.height-scroll_y) if max_y!=-1 else self.height-scroll_y))
         for y, line in enumerate(self.grid):
             for x, block in enumerate(line):
-                nsurf.blit(self.imgs.get_image(block.type),(x*self.imgs.block_size, y*self.imgs.block_size))
+                nsurf.blit(self.imgs.get_image(block.type),(x*self.imgs.block_size -scroll_x, y*self.imgs.block_size - scroll_y))
 
-        final_surf = pygame.Surface((min(max_x, self.width-scroll_x) if max_x else self.width-scroll_x,
-                                  min(max_y, self.height-scroll_y) if max_y else self.height-scroll_y))
+        display.blit(nsurf, (offset_x, offset_y))
 
 class DevPlayer:
     def __init__(self, x:int=0, y:int=0) -> None:
