@@ -72,6 +72,7 @@ class Image_storage:
 class Block:
     def __init__(self, type: 'BlockType'):
         self.type = type
+        self.locked = False
 
 class Grid:
     def __init__(self, width: int, height: int, player: 'DevPlayer') -> None:
@@ -83,6 +84,11 @@ class Grid:
         return self.grid[y][x].type
     def set_block(self, x: int, y: int, btype: 'BlockType') -> None:
         self.grid[y][x].type = btype
+    def lock_block(self, x: int, y: int) -> None:
+        self.grid[y][x].locked = True
+    def unlock_block(self, x: int, y: int) -> None:
+        self.grid[y][x].locked = False
+
     def delete_block(self, x:int, y: int) -> None:
         self.grid[y][x].type = BlockType.Empty
     def draw(self, display: pygame.Surface, offset_x: int=0, offset_y: int=0,
@@ -95,6 +101,8 @@ class Grid:
             for x in range(len(self.grid[0])):
                 img = self.imgs.get_image(self.grid[y][x].type)
                 nsurf.blit(img, (x * block_size - scroll_x, y * block_size - scroll_y))
+                if self.grid[y][x].locked:
+                    nsurf.blit(self.imgs.get_image(BlockType.Locked), (x * block_size - scroll_x, y * block_size - scroll_y))
                 # if (x,y) == (self.player.x, self.player.y):
         pl = self.player
         nsurf.blit(pl.get_image(), (pl.x * block_size - scroll_x, pl.y * block_size - scroll_y))
@@ -130,6 +138,8 @@ class DevPlayer:
 
     def grid_block(self, x:int, y:int) -> 'BlockType':
         if 0 <= self.y+y < self.h and 0 <= self.x+x < self.w:
+            if self.grid.grid[self.y+y][self.x+x].locked:
+                return BlockType.No
             return self.grid.grid[self.y+y][self.x+x].type
         return BlockType.No
 
@@ -217,8 +227,12 @@ def initialize(width: int, height: int):
     grid = Grid(*grid_size, player)
     player.grid = grid
     grid.set_block(1,1,BlockType.If)
+    grid.lock_block(1,1)
     grid.set_block(2,1,BlockType.Glop)
+    grid.lock_block(2,1)
     grid.set_block(2,2,BlockType.Death)
+    grid.set_block(3,2,BlockType.Equal)
+    grid.set_block(4,2,BlockType.Death)
 
     global indicator
     indicator = pygame.transform.scale_by(pygame.image.load(dev_folder / "blocks" / "mode_dev.png"), 3)
@@ -229,27 +243,26 @@ def update(key: int):
         elif key == pygame.K_s : player.move(PlayerDir.Down)
         elif key == pygame.K_d : player.move(PlayerDir.Right)
         elif key == pygame.K_a : player.move(PlayerDir.Left)
-        elif key == pygame.K_UP    and player.grid_block(0,-1) != BlockType.Empty:
+        elif key == pygame.K_UP    and player.grid_block(0,-1) != BlockType.Empty and player.grid_block(0,-1) != BlockType.No:
             player.selected = not player.selected
             player.select_dir = PlayerDir.Up
-        elif key == pygame.K_DOWN  and player.grid_block(0,1)  != BlockType.Empty:
+        elif key == pygame.K_DOWN  and player.grid_block(0,1)  != BlockType.Empty and player.grid_block(0,1)  != BlockType.No:
             player.selected = not player.selected
             player.select_dir = PlayerDir.Down
-        elif key == pygame.K_RIGHT and player.grid_block(1,0)  != BlockType.Empty:
+        elif key == pygame.K_RIGHT and player.grid_block(1,0)  != BlockType.Empty and player.grid_block(1,0)  != BlockType.No:
             player.selected = not player.selected
             player.select_dir = PlayerDir.Right
-        elif key == pygame.K_LEFT  and player.grid_block(-1,0) != BlockType.Empty:
+        elif key == pygame.K_LEFT  and player.grid_block(-1,0) != BlockType.Empty and player.grid_block(-1,0) != BlockType.No:
             player.selected = not player.selected
             player.select_dir = PlayerDir.Left
         elif key == pygame.K_SPACE: # auto select
             dirs = [(0, -1), (1, 0), (0, 1), (-1, 0)]
             pdir = [PlayerDir.Up, PlayerDir.Right, PlayerDir.Down, PlayerDir.Left].index(player.select_dir)
             for direction in dirs[pdir:] + dirs[:pdir]:
-                if player.grid_block(*direction) != BlockType.Empty:
+                if player.grid_block(*direction) != BlockType.Empty and player.grid_block(*direction) != BlockType.No:
                     player.selected = not player.selected
                     player.select_dir = [PlayerDir.Up, PlayerDir.Right, PlayerDir.Down, PlayerDir.Left][dirs.index(direction)]
                     break
-        
         player.tick = 0
     elif player.direction != PlayerDir.Idle:
         player.tick+= 1
