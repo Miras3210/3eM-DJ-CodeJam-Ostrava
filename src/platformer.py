@@ -2,12 +2,26 @@ import pygame, pathlib
 
 class Platform:
     def __init__(self, x: float, y: float, w: int, h: int, col: tuple[int,int,int]) -> None:
-        self.width, self.height = w, h
         self.color = col
-
-        self.x, self.y = x, y
-
         self.rect = pygame.rect.Rect(self.x, self.y, self.width, self.height)
+
+    @property
+    def x(self) -> int: return self.rect.x
+    @x.setter
+    def x(self, value: int) -> None: self.rect.x = value
+    @property
+    def y(self) -> int: return self.rect.y
+    @y.setter
+    def y(self, value: int) -> None: self.rect.y = value
+
+    @property
+    def width(self) -> int: return self.rect.width
+    @width.setter
+    def width(self, value: int) -> None: self.rect.width = value
+    @property
+    def height(self) -> int: return self.rect.height
+    @height.setter
+    def height(self, value: int) -> None: self.rect.height = value
 
     def draw(self, win: pygame.surface.Surface) -> None:
         pygame.draw.rect(win, self.color, self.rect)
