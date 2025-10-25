@@ -1,20 +1,45 @@
+from enum import Enum, auto
 import pygame
+
 import main_menu
 import helper
+import dev_mode
+import platformer
 
-main_menu_scene: bool = True
-helper_scene: bool = False
-
+class Scene(Enum):
+    MAIN_MENU = auto()
+    HELPER = auto()
+    GAME = auto()
+    DEV = auto()
 
 def main():
-    global main_menu_scene, helper_scene
-    window = pygame.display.set_mode((1600,900), pygame.FULLSCREEN)
+    window = pygame.display.set_mode((1600,900))
     width, height = window.get_size()
+    scene = Scene.MAIN_MENU
+
+
     main_menu.initialize(width, height)
     helper.initialize(width, height)
+    dev_mode.initialize(width, height)
+    platformer.initialize(width, height)
 
     run, clock = True, pygame.time.Clock()
     while run:
+        match scene:
+            case Scene.MAIN_MENU:
+                ev = main_menu.update(window)
+                if ev == "play": scene = Scene.GAME
+                if ev == "help": scene = Scene.HELPER
+                if ev == "quit": run = False
+                main_menu.draw(window)
+            case Scene.HELPER:
+                ev = helper.update(window)
+                if ev == "exit": scene = Scene.MAIN_MENU
+                helper.draw(window)
+            case Scene.GAME:
+                platformer.update()
+                platformer.draw(window)
+
         pygame.display.update()
         clock.tick(60)
 
@@ -25,24 +50,6 @@ def main():
                 if event.key == pygame.K_ESCAPE:
                     run = False
 
-        match main_menu.report_activity():
-            case "help":
-                main_menu_scene = False
-                helper_scene = True
-            case "quit":
-                run = False
-
-        match helper.report_activity():
-            case "help_exit":
-                main_menu_scene = True
-                helper_scene = False
-
-        if main_menu_scene:
-            main_menu.update(window)
-            main_menu.draw(window)
-        if helper_scene:
-            helper.update(window)
-            helper.draw(window)
 
 
 if __name__ == '__main__':

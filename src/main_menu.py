@@ -36,19 +36,13 @@ class Button:
     def cursor_collision(self) -> bool:
         return self.rect.collidepoint(pygame.mouse.get_pos())
 
-    def update(self) -> None:
+    def update(self) -> bool:
         if self.cursor_collision():
             self.scale = min(self.max_hover_scale, self.scale+0.02)
+            return pygame.mouse.get_pressed()[0]
         else:
             self.scale = max(1, self.scale-0.02)
-
-    def button_response(self) -> bool:
-        if self.cursor_collision() and pygame.mouse.get_pressed()[0] and not self.response_sent:
-            self.response_sent = True
-            return True
-        elif not pygame.mouse.get_pressed()[0]:
-            self.response_sent = False
-            return False
+        return False
 
 
 start_button: Button
@@ -105,7 +99,7 @@ def initialize(width: int, height: int) -> None:
     )
 
 
-def update(window: pygame.surface.Surface) -> None:
+def update(window: pygame.surface.Surface) -> str:
     global transition_animation, animation_scale, after_start_button, after_help_button, start_button_active, help_button_active
     if any([start_button.cursor_collision(),
             help_button.cursor_collision(),
@@ -114,12 +108,12 @@ def update(window: pygame.surface.Surface) -> None:
     else:
         pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
 
-    if start_button.button_response():
-        transition_animation = True
-        after_start_button = True
-    elif help_button.button_response():
-        transition_animation = True
-        after_help_button = True
+    # if start_button.button_response():
+    #     transition_animation = True
+    #     after_start_button = True
+    # elif help_button.button_response():
+    #     transition_animation = True
+    #     after_help_button = True
 
     if transition_animation:
         animation_scale += 26
@@ -134,22 +128,28 @@ def update(window: pygame.surface.Surface) -> None:
         after_start_button = False
         animation_scale = 0
 
-    start_button.update()
-    help_button.update()
-    quit_button.update()
-
-
-def report_activity() -> str:
-    global start_button_active, help_button_active
-    if quit_button.button_response():
-        return "quit"
-    if start_button_active:
-        start_button_active = False
+    if start_button.update():
+        # transition_animation = True
+        # after_start_button = True
         return "play"
-    if help_button_active:
-        help_button_active = False
+    if help_button.update():
+        # transition_animation = True
+        # after_help_button = True
         return "help"
+    if quit_button.update(): return "quit"
     return ""
+
+# def report_activity() -> str:
+#     global start_button_active, help_button_active
+#     if quit_button.button_response():
+#         return "quit"
+#     if start_button_active:
+#         start_button_active = False
+#         return "play"
+#     if help_button_active:
+#         help_button_active = False
+#         return "help"
+#     return ""
 
 
 def draw(window: pygame.surface.Surface) -> None:
@@ -182,6 +182,6 @@ def main(window: pygame.surface.Surface):
                     run = False
 
 if __name__ == '__main__':
-    window = pygame.display.set_mode((1600,900), pygame.FULLSCREEN)
+    window = pygame.display.set_mode((1600,900))
     main(window)
     pygame.quit()

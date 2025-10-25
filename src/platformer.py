@@ -127,9 +127,9 @@ class Grid:
                 win.blit(self.grid[y][x].texture, (x*block_size,y*block_size,block_size,block_size))
 
 class Player:
-    def __init__(self, x: float, y: float, w: int, h: int) -> None:
-        self.width, self.height = w, h
-        self.x, self.y = x, y
+    def __init__(self) -> None:
+        self.x, self.y = 0,0
+        self.width, self.height = block_size, block_size
         self.x_vel, self.y_vel = 0, 0
 
         self.grid: 'Grid'
@@ -234,6 +234,13 @@ font = pygame.font.SysFont("Arial Black", 24)
 player: Player
 grid: Grid
 
+P_JUMP = 30
+P_SPEED = 3
+P_SLIDE = 0.8
+
+gravity = 1.5
+
+
 grid_legend = {
     "A" : BlockType.AIR,
     "G" : BlockType.GROUND,
@@ -270,10 +277,10 @@ def initialize(width: int, height: int):
     print(grid.grid[0][0].texture is grid.grid[0][1].texture)
     grid.bake_textures()
     
-    player = Player(0, 0, block_size, block_size)
+    player = Player()
     player.grid = grid
 
-def draw(win: pygame.surface.Surface, player: Player, grid: Grid) -> None:
+def draw(win: pygame.surface.Surface) -> None:
     win.fill((255,255,255))
 
     grid.draw(win)
@@ -283,7 +290,7 @@ def draw(win: pygame.surface.Surface, player: Player, grid: Grid) -> None:
     win.blit(font.render(f"y: {player.y}", 1, (0,0,0)), (10, 35))
     win.blit(font.render(f"afk: {player.y_vel}", 1, (0,0,0)), (10, 60))
 
-def update(player: Player) -> None:
+def update() -> None:
     keys = pygame.key.get_pressed()
     player.update(keys)
 
@@ -294,9 +301,9 @@ def main(window: pygame.surface.Surface):
     run, clock = True, pygame.time.Clock()
     initialize(width, height)
     while run:
-        update(player)
+        update()
 
-        draw(window, player, grid)
+        draw(window)
 
         pygame.display.update()
         clock.tick(60)
@@ -310,12 +317,6 @@ def main(window: pygame.surface.Surface):
 
 if __name__ == '__main__':
     # globals
-    P_W, P_H = 128, 128
-    P_JUMP = 30
-    P_SPEED = 3
-    P_SLIDE = 0.8
-
-    gravity = 1.5
 
     window = pygame.display.set_mode((1600,900))
 
