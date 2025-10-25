@@ -9,7 +9,7 @@ background: pygame.Surface
 def initialize(width:int, height:int) -> None:
     global background
 
-    background = pygame.transform.scale(pygame.image.load(misc_dir / "bluescreen.png"), (width, height))
+    background = pygame.transform.scale(pygame.image.load(misc_dir / "bluescreen_unknown.png"), (width, height))
 
 def update(key: int) -> str:
     global ticker
