@@ -83,6 +83,10 @@ class BlockImages:
     spikes             = _img_load_helper(block_dir / "spikes.png")
     coin               = _img_load_helper(block_dir / "Coin.png")
     door               = _img_load_helper(block_dir / "door.png")
+    gbush              = _img_load_helper(block_dir / "gbush.png")
+    short_grass        = _img_load_helper(block_dir / "short_grass.png")
+    rock               = _img_load_helper(block_dir / "rock.png")
+    michal               = _img_load_helper(block_dir / "michal.png")
 
 
 class Block:
@@ -163,6 +167,18 @@ class Grid:
                 if self.get_block(x, y) == BlockType.AIR and not random.randint(0,25):
                     self.grid[y][x].texture.blit(BlockImages.cloud3, (0,0))
 
+                if self.get_block(x, y) == BlockType.AIR and not random.randint(0,4) and self.get_block(x, y+1) == BlockType.GROUND and y>0:
+                    self.grid[y][x].texture.blit(BlockImages.gbush, (0,0))
+
+                if self.get_block(x, y) == BlockType.AIR and self.get_block(x, y+1) == BlockType.GROUND and y>0:
+                    self.grid[y][x].texture.blit(BlockImages.short_grass, (0,0))
+
+                if self.get_block(x, y) == BlockType.AIR and not random.randint(0,6) and self.get_block(x, y+1) == BlockType.GROUND and y>0:
+                    self.grid[y][x].texture.blit(BlockImages.rock, (0,0))
+
+                if self.get_block(x, y) == BlockType.AIR and not random.randint(0,1000) and self.get_block(x, y+1) == BlockType.GROUND and y>0:
+                    self.grid[y][x].texture.blit(BlockImages.michal, (0,0))
+
     def draw(self, win: pygame.surface.Surface, offsetx: int) -> None:
         for y in range(self.height):
             for x in range(self.width):
@@ -220,12 +236,15 @@ class Player:
         elif self.afk_counter >= 120:
             texture = PlayerImages.Idle1 if (self.afk_counter // 30) % 2 else PlayerImages.Idle2
         win.blit(texture,(self.x-offsetx, self.y))
+        
+    def sound(self, effect: pygame.mixer.Sound, volume: float) -> None:
+        effect.set_volume(volume)
+        effect.play()
 
     def update(self, keys: pygame.key.ScancodeWrapper) -> None:
         if keys[pygame.K_w] or keys[pygame.K_UP] or keys[pygame.K_SPACE]:
             if self.on_ground:
-                SoundEffects.jump.set_volume(0.2)
-                SoundEffects.jump.play()
+                self.sound(SoundEffects.jump, 0.2)
                 self.y_vel = -self.JUMP
 
         if keys[pygame.K_a] or keys[pygame.K_LEFT]:
@@ -263,6 +282,7 @@ class Player:
             for x, block in enumerate(line):
                 if block.type == BlockType.SPIKE and self.hitbox.colliderect((x*block_size, y*block_size+82, block_size, 36)):
                     self.alive = False
+                    self.sound(SoundEffects.death, 0.1)
                 if block.type == BlockType.DOOR and self.hitbox.colliderect((x*block_size, y*block_size, block_size, block_size)):
                     self.win = True
                 if block.type == BlockType.COIN and self.hitbox.colliderect((x*block_size+20, y*block_size+20, block_size-40, block_size-40)):
@@ -286,6 +306,7 @@ class Player:
         
         if self.y > self.VOID:
             self.alive = False
+            self.sound(SoundEffects.death, 0.1)
             # self.y_vel = 0
         
         if self.y_vel == 0 and self.x_vel == 0:
@@ -297,13 +318,11 @@ class Player:
             self.afk_counter = 0
             
         if self.move_counter >= 10 and self.on_ground:
-            SoundEffects.walk.set_volume(0.1)
-            SoundEffects.walk.play()
+            self.sound(SoundEffects.walk, 0.1)
             self.move_counter = -10
             
         if self.on_ground_counter == 1:
-            SoundEffects.fall.set_volume(0.1)
-            SoundEffects.fall.play()
+            self.sound(SoundEffects.fall, 0.1)
 
 ################################################################################################################
 
