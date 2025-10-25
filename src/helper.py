@@ -7,11 +7,13 @@ exit_button_image: pygame.surface.Surface = pygame.image.load(base / "X.png")
 slide_image1: pygame.surface.Surface = pygame.image.load(base / "help_screen.png")
 slide_image2: pygame.surface.Surface = pygame.image.load(base / "help_screen2.png")
 slide_image3: pygame.surface.Surface = pygame.image.load(base / "help_screen3.png")
+slide_image4: pygame.surface.Surface = pygame.image.load(base / "help_screen4.png")
 
 images: list[pygame.surface.Surface] = [
     slide_image1,
     slide_image2,
-    slide_image3
+    slide_image3,
+    slide_image4
 ]
 
 # Colors:
