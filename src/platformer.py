@@ -302,7 +302,7 @@ font = pygame.font.SysFont("Arial Black", 24)
 player: Player
 grid: Grid
 indicator: pygame.Surface
-level = 1
+level = 4
 gravity = 1.5
 
 camx = 0
