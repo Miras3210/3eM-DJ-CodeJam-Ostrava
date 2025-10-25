@@ -253,12 +253,17 @@ class Player:
         self.y_updated_rect.y += int(self.y_vel)
         for y, line in enumerate(self.grid.grid):
             for x, block in enumerate(line):
+                if block.type == BlockType.SPIKE and self.hitbox.colliderect((x*block_size, y*block_size+82, block_size, 36)):
+                    self.alive = False
                 if (block.type == BlockType.GROUND and self.y_updated_rect.colliderect((x*block_size, y*block_size, block_size, block_size))) \
-                    or (self.y_vel > 0 and block.type == BlockType.PLATFORM and self.y_updated_rect.colliderect((x*block_size, y*block_size, block_size, 1))):
+                  or (self.y_vel > 0 and self.hitbox.bottom <= y*block_size and block.type == BlockType.PLATFORM and self.y_updated_rect.colliderect((x*block_size, y*block_size, block_size, 36))):
+                    if self.hitbox.bottom <= y*block_size:
+                        self.on_ground = True
+                        self.y_updated_rect.bottom = y*block_size
+                        self.y = self.y_updated_rect.y - 36
                     self.y_vel = 0
                     if self.on_ground and self.on_ground_counter < 150:
                         self.on_ground_counter+= 1
-                    self.on_ground = True
                     break
             else: continue
             break
@@ -266,11 +271,6 @@ class Player:
             self.y += int(self.y_vel)
             self.on_ground = False
             self.on_ground_counter = 0
-            
-        for y, line in enumerate(self.grid.grid):
-            for x, block in enumerate(line):
-                if block.type == BlockType.SPIKE and self.hitbox.colliderect((x*block_size, y*block_size+82, block_size, 36)):
-                    self.alive = False
         
         if self.y > self.VOID:
             self.alive = False
@@ -302,7 +302,7 @@ font = pygame.font.SysFont("Arial Black", 24)
 player: Player
 grid: Grid
 indicator: pygame.Surface
-level = 1
+level = 4
 gravity = 1.5
 
 camx = 0
@@ -360,8 +360,8 @@ def draw(win: pygame.surface.Surface) -> None:
     win.blit(indicator, (10,10))
     
     win.blit(font.render(f"1: {player.afk_counter}", 1, (0,0,0)), (10, 30))
-    win.blit(font.render(f"2: {player}", 1, (0,0,0)), (10, 50))
-    win.blit(font.render(f"3: {player}", 1, (0,0,0)), (10, 70))
+    win.blit(font.render(f"2: {player.on_ground}", 1, (0,0,0)), (10, 50))
+    win.blit(font.render(f"3: {player.y_vel}", 1, (0,0,0)), (10, 70))
 
 def update(key: int, screen_width: int) -> str:
     global camx
@@ -400,7 +400,6 @@ def main(window: pygame.surface.Surface):
 
 if __name__ == '__main__':
     # globals
-
     window = pygame.display.set_mode((1600,900))
 
     main(window)
