@@ -51,12 +51,13 @@ class PlayerImages:
 pygame.mixer.music.set_volume(0.7)
 
 class SoundEffects:
-    walk     =pygame.mixer.music.load(effect_dir / "walk.wav")
-    fall     =pygame.mixer.music.load(effect_dir / "fall.wav")
-    death    =pygame.mixer.music.load(effect_dir / "death.wav")
-    jump     =pygame.mixer.music.load(effect_dir / "jump.wav")
+    walk     =pygame.mixer.Sound(effect_dir / "walk.wav")
+    fall     =pygame.mixer.Sound(effect_dir / "fall.wav")
+    death    =pygame.mixer.Sound(effect_dir / "death.wav")
+    jump     =pygame.mixer.Sound(effect_dir / "jump.wav")
 
-
+class Music:
+    pass
 
 block_dir = adventure_dir / "blocks"
 
@@ -172,6 +173,7 @@ class Player:
 
         self.afk_counter = 0
         self.on_ground_counter = 0
+        self.move_counter = 0
 
         self.SPEED = 3
         self.JUMP = 30
@@ -209,16 +211,20 @@ class Player:
             texture = PlayerImages.Idle1 if (self.afk_counter // 30) % 2 else PlayerImages.Idle2
         win.blit(texture,(self.x-offsetx, self.y))
 
-
     def update(self, keys: pygame.key.ScancodeWrapper) -> None:
         if keys[pygame.K_w] or keys[pygame.K_UP] or keys[pygame.K_SPACE]:
             if self.on_ground:
+                SoundEffects.jump.set_volume(0.2)
+                SoundEffects.jump.play()
                 self.y_vel = -self.JUMP
+
         if keys[pygame.K_a] or keys[pygame.K_LEFT]:
             self.x_vel -= self.SPEED
+            self.move_counter += 1
             
         if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
             self.x_vel += self.SPEED
+            self.move_counter += 1
 
     # velocity
         self.y_vel += gravity
@@ -246,7 +252,7 @@ class Player:
         for y, line in enumerate(self.grid.grid):
             for x, block in enumerate(line):
                 if (block.type == BlockType.GROUND and self.y_updated_rect.colliderect((x*block_size, y*block_size, block_size, block_size))) \
-                    or (self.y_vel > 0 and block.type == BlockType.PLATFORM and self.y_updated_rect.colliderect((x*block_size, y*block_size, block_size, 36))):
+                    or (self.y_vel > 0 and block.type == BlockType.PLATFORM and self.y_updated_rect.colliderect((x*block_size, y*block_size, block_size, 1))):
                     self.y_vel = 0
                     if self.on_ground and self.on_ground_counter < 150:
                         self.on_ground_counter+= 1
@@ -270,10 +276,18 @@ class Player:
         
         if self.y_vel == 0 and self.x_vel == 0:
             self.afk_counter+= 1
+            self.move_counter = 0
             if self.afk_counter == 180:
                 self.afk_counter = 120
         else:
             self.afk_counter = 0
+            
+        if self.move_counter >= 10 and self.on_ground:
+            SoundEffects.walk.set_volume(0.1)
+            SoundEffects.walk.play()
+            self.move_counter = -10
+            
+        if self.on_ground_counter < 10 and abs(self.x_vel) < 5: pass
 
 ################################################################################################################
 
