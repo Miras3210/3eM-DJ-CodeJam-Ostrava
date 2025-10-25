@@ -115,9 +115,31 @@ def sel_bar():
 
 def get_grid():
     height, width = grid.height, grid.width
-    n_grid = [[grid.grid[y][x].type.name for x in range(width)] for y in range(height)]
-    with open("grid_file.json","w") as f:
-        json.dump(n_grid,f)
+    conversion = {
+        BlockType.AIR : "A",
+        BlockType.GROUND : "G",
+        BlockType.PLATFORM : "P",
+        BlockType.SPIKE : "S",
+        BlockType.DOOR : "D",
+        BlockType.COIN : "C"
+    }
+    # n_grid = [[grid.grid[y][x].type.name for x in range(width)] for y in range(height)]
+    # with open("grid_file.json","w") as f:
+    #     json.dump(n_grid,f)
+    end = width-1
+    for _ in range(width):
+        for y in range(height):
+            if grid.get_block(end, y) != BlockType.AIR: break
+        else: end-= 1; continue
+        break
+    end+=1
+    n_grid = []
+    with open("grid_file.grid","w") as f:
+        for x in range(end):
+            f.write("".join([conversion.get(grid.grid[y][x].type, " ") for y in range(height)]))
+            f.write("\n")
+        # json.dump(n_grid,f)
+
 
 # setup
 pygame.init()
@@ -154,9 +176,12 @@ while run:
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            get_grid()
             run = False
-        elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-            run = False
+        
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                run = False
+            elif event.key == pygame.K_s:
+                get_grid()
 
 pygame.quit()

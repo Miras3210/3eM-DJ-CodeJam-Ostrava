@@ -1,9 +1,7 @@
-import pygame, pathlib
+import pygame
+from pathlib import Path
 from enum import Enum, auto
-
-with open("grid_file.json","r") as f:
-    grid_file: list[list[str]]
-    exec(f"grid_file = {f.read()}")
+pygame.display.init()
 
 class BlockType(Enum):
     AIR = auto()
@@ -24,10 +22,10 @@ class PlayerSprite(Enum):
 
 image_scale = 4
 block_size = 32 * image_scale
-adventure_dir = pathlib.Path(__file__).parent.parent / "Textures" / "Adventure"
+adventure_dir = Path(__file__).parent.parent / "Textures" / "Adventure"
 char_dir = adventure_dir / "characters"
 
-def _img_load_helper(img_path: pathlib.Path) -> pygame.Surface:
+def _img_load_helper(img_path: Path) -> pygame.Surface:
     return pygame.transform.scale(pygame.image.load(img_path), (block_size, block_size))
 
 class PlayerImages:
@@ -64,15 +62,21 @@ class BlockImages:
 class Block:
     def __init__(self, block_type: 'BlockType') -> None:
         self.type = block_type
-        self.texture: pygame.surface.Surface
+        self.texture: pygame.surface.Surface = BlockImages.air.copy()
 
 class Grid:
-    def __init__(self, width: int, height: int, grid: list[list[str]]) -> None:
+    def __init__(self, width: int, height: int) -> None:
         self.width, self.height = width, height
-        # self.grid = [[Block(BlockType.AIR) for w in range(width)] for h in range(height)]
-        self.grid = [[Block(get_grid_block(grid[y][x])) for x in range(width)] for y in range(height)]
-        # for block in self.grid[-1]:
-        #     block.type = BlockType.GROUND
+        self.grid = [[Block(BlockType.AIR) for _ in range(width)] for _ in range(height)]
+
+    def clear_grid(self) -> None:
+        for line in self.grid:
+            for block in line:
+                block.type = BlockType.AIR
+
+    def regenerate(self, width: int, height: int):
+        self.width, self.height = width, height
+        self.grid = [[Block(BlockType.AIR) for _ in range(width)] for _ in range(height)]
 
     def get_block(self, x: int, y: int) -> 'BlockType':
         return self.grid[y][x].type
@@ -80,43 +84,47 @@ class Grid:
     def set_block(self, x: int, y: int, block_type: 'BlockType') -> None:
         self.grid[y][x].type = block_type
 
-    def draw(self, win: pygame.surface.Surface) -> None:
+    def bake_textures(self):
         for y in range(self.height):
             for x in range(self.width):
                 if self.grid[y][x].type == BlockType.GROUND:
-                    # pygame.draw.rect(win, (0,0,0), (x*block_size,y*block_size,block_size,block_size))
-                    win.blit(BlockImages.dirt_block, (x*block_size,y*block_size,block_size,block_size))
+                    # pygame.draw.rect(win, (0,0,0), (0,0))
+                    self.grid[y][x].texture.blit(BlockImages.dirt_block, (0,0))
                     if y>0 and self.grid[y-1][x].type != BlockType.GROUND:
-                       win.blit(BlockImages.grass, (x*block_size,y*block_size,block_size,block_size))
+                        self.grid[y][x].texture.blit(BlockImages.grass, (0,0))
                     if x>0 and self.grid[y][x-1].type != BlockType.GROUND:
-                       win.blit(pygame.transform.rotate(BlockImages.grass,90), (x*block_size,y*block_size,block_size,block_size))
+                        self.grid[y][x].texture.blit(pygame.transform.rotate(BlockImages.grass,90), (0,0))
                     if x>0 and self.grid[y][x-1].type != BlockType.GROUND and y>0 and self.grid[y-1][x].type != BlockType.GROUND:
-                        win.blit(pygame.transform.rotate(BlockImages.grass_outer_corner,90), (x*block_size,y*block_size,block_size,block_size))
+                        self.grid[y][x].texture.blit(pygame.transform.rotate(BlockImages.grass_outer_corner,90), (0,0))
 
                     if y>0 and self.grid[y+1][x].type != BlockType.GROUND:
-                       win.blit(pygame.transform.rotate(BlockImages.grass,180), (x*block_size,y*block_size,block_size,block_size))
+                        self.grid[y][x].texture.blit(pygame.transform.rotate(BlockImages.grass,180), (0,0))
                     if x>0 and self.grid[y][x+1].type != BlockType.GROUND:
-                       win.blit(pygame.transform.rotate(BlockImages.grass,270), (x*block_size,y*block_size,block_size,block_size))
+                        self.grid[y][x].texture.blit(pygame.transform.rotate(BlockImages.grass,270), (0,0))
                     if x>0 and self.grid[y][x+1].type != BlockType.GROUND and y>0 and self.grid[y+1][x].type != BlockType.GROUND:
-                        win.blit(pygame.transform.rotate(BlockImages.grass_outer_corner,270), (x*block_size,y*block_size,block_size,block_size))
+                        self.grid[y][x].texture.blit(pygame.transform.rotate(BlockImages.grass_outer_corner,270), (0,0))
 
                     if y>0 and self.grid[y-1][x-1].type != BlockType.GROUND and x>0 and self.grid[y+1][x].type == BlockType.GROUND:
-                       win.blit(BlockImages.grass_inner_corner, (x*block_size,y*block_size,block_size,block_size))
+                        self.grid[y][x].texture.blit(BlockImages.grass_inner_corner, (0,0))
 
                 if self.grid[y][x].type == BlockType.PLATFORM:
-                    win.blit(BlockImages.platform, (x*block_size,y*block_size,block_size,block_size))
-                
+                    self.grid[y][x].texture.blit(BlockImages.platform, (0,0))
+
                 if self.grid[y][x].type == BlockType.SPIKE:
-                    win.blit(BlockImages.spikes, (x*block_size,y*block_size,block_size,block_size))
+                    self.grid[y][x].texture.blit(BlockImages.spikes, (0,0))
 
                 if self.grid[y][x].type == BlockType.COIN:
-                    win.blit(BlockImages.coin, (x*block_size,y*block_size,block_size,block_size))
+                    self.grid[y][x].texture.blit(BlockImages.coin, (0,0))
 
                 if self.grid[y][x].type == BlockType.DOOR:
-                    win.blit(BlockImages.door, (x*block_size,y*block_size,block_size,block_size))
+                    self.grid[y][x].texture.blit(BlockImages.door, (0,0))
 
-                pygame.draw.rect(win, (0,0,0), (x*block_size,y*block_size,block_size,block_size), 2)
+                # pygame.draw.rect(self.grid[y][x].texture, (0,0,0), (0,0,block_size,block_size), 2)
 
+    def draw(self, win: pygame.surface.Surface) -> None:
+        for y in range(self.height):
+            for x in range(self.width):
+                win.blit(self.grid[y][x].texture, (x*block_size,y*block_size,block_size,block_size))
 
 class Player:
     def __init__(self, x: float, y: float, w: int, h: int) -> None:
@@ -132,11 +140,8 @@ class Player:
         self.on_ground_counter = 0
 
     @property
-    def rect(self) -> pygame.rect.Rect:
-        return pygame.rect.Rect(self.x, self.y, self.width, self.height)
-    @rect.setter
-    def rect(self, value: pygame.rect.Rect):
-        self.x, self.y, self.width, self.height = int(value.x), int(value.y), int(value.w), int(value.h)
+    def hitbox(self) -> pygame.Rect:
+        return pygame.Rect(self.x+16, self.y, self.width-32, self.height)
 
     def draw(self, win: pygame.surface.Surface) -> None:
         texture = PlayerImages.Base
@@ -163,7 +168,7 @@ class Player:
             texture = PlayerImages.Left
         elif self.afk_counter >= 120:
             texture = PlayerImages.Idle1 if (self.afk_counter // 30) % 2 else PlayerImages.Idle2
-        win.blit(texture,self.rect)
+        win.blit(texture,(self.x, self.y))
 
     def update(self, keys: pygame.key.ScancodeWrapper) -> None:
         if keys[pygame.K_w] or keys[pygame.K_UP]:
@@ -178,7 +183,7 @@ class Player:
         else: self.x_vel *= P_SLIDE
 
     # collision
-        self.x_updated_rect = self.rect
+        self.x_updated_rect = self.hitbox
         self.x_updated_rect.x += int(self.x_vel)
         for y, line in enumerate(self.grid.grid):
             for x, block in enumerate(line):
@@ -189,10 +194,14 @@ class Player:
             else: continue
             break
         else:
-            self.x += int(self.x_vel)
-            self.on_wall = False
+            if self.x_updated_rect.x > 0:
+                self.x += int(self.x_vel)
+                self.on_wall = False
+            else:
+                self.x_vel = 0
+                self.on_wall = True
 
-        self.y_updated_rect = self.rect
+        self.y_updated_rect = self.hitbox
         self.y_updated_rect.y += int(self.y_vel)
         for y, line in enumerate(self.grid.grid):
             for x, block in enumerate(line):
@@ -218,33 +227,49 @@ class Player:
 
 ################################################################################################################
 
+Level_dir = Path(__file__).parent.parent / "Levels"
+
 pygame.font.init()
 font = pygame.font.SysFont("Arial Black", 24)
 player: Player
 grid: Grid
 
-def get_grid_block(type_name: str) -> BlockType:
-    match type_name:
-        case "AIR":
-            return BlockType.AIR
-        case "GROUND":
-            return BlockType.GROUND
-        case "PLATFORM":
-            return BlockType.PLATFORM
-        case "SPIKE":
-            return BlockType.SPIKE
-        case "COIN":
-            return BlockType.COIN
-        case "DOOR":
-            return BlockType.DOOR
-        case _:
-            print("fail")
-            return BlockType.AIR
+grid_legend = {
+    "A" : BlockType.AIR,
+    "G" : BlockType.GROUND,
+    "P" : BlockType.PLATFORM,
+    "S" : BlockType.SPIKE,
+    "D" : BlockType.DOOR,
+    "C" : BlockType.COIN
+}
+def load_grid_file(filename: str | Path, grid: 'Grid'):
+    with open(filename,"r") as f:
+        for x, line in enumerate(f):
+            for y, bl in enumerate(line.strip()):
+                grid.set_block(x,y,grid_legend.get(bl, BlockType.AIR))
+
+def load_level(level: int, grid: 'Grid'):
+    return load_grid_file(Level_dir / f"Level{level}.grid", grid)
 
 def initialize(width: int, height: int):
+    for attr in dir(PlayerImages):
+        img = getattr(PlayerImages, attr)
+        if isinstance(img, pygame.Surface):
+            setattr(PlayerImages, attr, img.convert_alpha())
+
+    for attr in dir(BlockImages):
+        img = getattr(BlockImages, attr)
+        if isinstance(img, pygame.Surface):
+            setattr(BlockImages, attr, img.convert_alpha())
+    
     global player, grid
-    grid = Grid(100,7,grid_file)
-    # grid.set_block(2,5,BlockType.GROUND)
+    
+    grid = Grid(100,7)
+    grid.clear_grid()
+    load_level(1, grid)
+    print(grid.grid[0][0].texture is grid.grid[0][1].texture)
+    grid.bake_textures()
+    
     player = Player(0, 0, block_size, block_size)
     player.grid = grid
 
@@ -254,8 +279,8 @@ def draw(win: pygame.surface.Surface, player: Player, grid: Grid) -> None:
     grid.draw(win)
 
     player.draw(win)
-    win.blit(font.render(f"ground: {player.on_ground}", 1, (0,0,0)), (10, 10))
-    win.blit(font.render(f"ground: {player.y}", 1, (0,0,0)), (10, 35))
+    win.blit(font.render(f"x: {player.x}", 1, (0,0,0)), (10, 10))
+    win.blit(font.render(f"y: {player.y}", 1, (0,0,0)), (10, 35))
     win.blit(font.render(f"afk: {player.y_vel}", 1, (0,0,0)), (10, 60))
 
 def update(player: Player) -> None:
