@@ -36,10 +36,6 @@ dev_folder = Path(__file__).parent.parent / "Textures" / "Dev"
 scale = 4
 block_size = 32 * scale
 
-grid.set_block(0,0,BlockType.If)
-
-grid.set_block(1,1,BlockType.If)
-
 selected = BlockType.No
 
 window = pygame.display.set_mode((1600, 900))
@@ -85,4 +81,12 @@ while run:
                     selected = BlockType.Empty
                 else:
                     selected = blocks[3*my + mx]
+
+for y, line in enumerate(grid.grid):
+    for x, g in enumerate(line):
+        if g.type != BlockType.Empty:
+            print(f"grid.set_block({x}, {y}, BlockType.{g.type.name})")
+        if g.locked:
+            print(f"grid.lock_block({x}, {y})")
+
 pygame.quit()
