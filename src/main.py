@@ -32,7 +32,7 @@ def main():
     width, height = window.get_size()
     scene = Scene.MAIN_MENU
 
-    platformer.level = 14
+    platformer.level = 1
 
     main_menu.initialize(width, height)
     helper.initialize(width, height)

@@ -256,7 +256,7 @@ class Player:
             self.move_counter += 1
 
     # velocity
-        self.y_vel += gravity
+        self.y_vel += gravity * param.get("jump", 1)
         if abs(self.x_vel) < 0.1: self.x_vel = 0
         else: self.x_vel *= self.SLIDE
 
