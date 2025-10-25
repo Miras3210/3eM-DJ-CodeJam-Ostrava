@@ -413,20 +413,24 @@ def initialize(width: int, height: int):
     player = DevPlayer(1,2,*grid_size)
     grid = Grid(*grid_size, player)
     player.grid = grid
-    
-    grid.set_block(1,1,BlockType.If)
-    grid.set_block(2,1,BlockType.Num_1)
-    grid.set_block(3,1,BlockType.Equal)
-    grid.set_block(4,1,BlockType.Num_1)
-    grid.set_block(2,2,BlockType.Vel)
-    grid.set_block(2,4,BlockType.Jump)
-    grid.set_block(3,2,BlockType.Equal)
-    grid.set_block(4,2,BlockType.Num_2)
-    # grid.set_block(8,5,BlockType.Num_9)
-    # grid.lock_block(1,1)
-    grid.lock_block(2,2)
 
-    # grid.set_block(5,2,BlockType.No)
+    grid.set_block(0, 0, BlockType.Num_2)
+    grid.set_block(1, 0, BlockType.No)
+    grid.set_block(7, 0, BlockType.Num_2)
+    grid.set_block(8, 0, BlockType.Minus)
+    grid.set_block(1, 1, BlockType.If)
+    grid.set_block(3, 1, BlockType.Equal)
+    grid.lock_block(3, 1)
+
+    grid.set_block(5, 1, BlockType.Num_1)
+    grid.set_block(8, 1, BlockType.Num_1)
+    grid.set_block(3, 2, BlockType.Equal)
+    grid.lock_block(3, 2)
+
+    grid.set_block(5, 2, BlockType.No)
+    grid.set_block(2, 3, BlockType.Jump)
+    grid.set_block(4, 3, BlockType.Num_0)
+    grid.set_block(6, 4, BlockType.Vel)
 
     processor = GridProcessor(grid)
 
