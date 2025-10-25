@@ -5,30 +5,35 @@ import main_menu
 import helper
 import dev_mode
 import platformer
+import bsod
 
 class Scene(Enum):
     MAIN_MENU = auto()
     HELPER = auto()
     GAME = auto()
     DEV = auto()
+    BSOD = auto()
 
 def main():
     window = pygame.display.set_mode((1600,900))
     width, height = window.get_size()
     scene = Scene.MAIN_MENU
 
-
     main_menu.initialize(width, height)
     helper.initialize(width, height)
     dev_mode.initialize(width, height)
     platformer.initialize(width, height)
+    bsod.initialize(width, height)
 
+    key = 0
     run, clock = True, pygame.time.Clock()
     while run:
         match scene:
             case Scene.MAIN_MENU:
                 ev = main_menu.update(window)
-                if ev == "play": scene = Scene.GAME
+                if ev == "play":
+                    pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
+                    scene = Scene.GAME
                 if ev == "help": scene = Scene.HELPER
                 if ev == "quit": run = False
                 main_menu.draw(window)
@@ -37,8 +42,24 @@ def main():
                 if ev == "exit": scene = Scene.MAIN_MENU
                 helper.draw(window)
             case Scene.GAME:
-                platformer.update()
+                ev = platformer.update(key)
+                if ev == "bsod":
+                    bsod.ticker = 0
+                    scene = Scene.BSOD
+                if ev == "switch": scene = Scene.DEV
                 platformer.draw(window)
+            case Scene.DEV:
+                ev = dev_mode.update(key)
+                if ev == "switch": scene = Scene.GAME
+                dev_mode.draw_game(window)
+            case Scene.BSOD:
+                ev = bsod.update(key)
+                if ev == "exit":
+                    platformer.initialize(width, height)
+                    dev_mode.initialize(width, height)
+                    scene = Scene.GAME
+                bsod.draw(window)
+        key = 0
 
         pygame.display.update()
         clock.tick(60)
@@ -49,6 +70,7 @@ def main():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     run = False
+                key = event.key
 
 
 
