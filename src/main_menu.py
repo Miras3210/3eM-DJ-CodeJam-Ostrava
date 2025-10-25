@@ -1,7 +1,5 @@
 import pygame
 import pathlib
-import math
-pygame.init()
 
 # Image load:
 base = pathlib.Path(__file__).parent.parent / "Textures" / "Misc"
@@ -75,9 +73,11 @@ transition_animation: bool = False
 animation_scale: int = 0
 after_help_button: bool = False
 after_start_button: bool = False
+start_button_active: bool = False
+help_button_active: bool = False
 
 
-def initialize(width, height) -> None:
+def initialize(width: int, height: int) -> None:
     global start_button, help_button, quit_button, background, logo
     background = pygame.transform.scale(background_image, (width, height))
     logo = pygame.transform.scale(logo_image, (logo_width, logo_height))
@@ -105,8 +105,8 @@ def initialize(width, height) -> None:
     )
 
 
-def update() -> str:
-    global transition_animation, animation_scale, after_start_button, after_help_button
+def update(window: pygame.surface.Surface) -> None:
+    global transition_animation, animation_scale, after_start_button, after_help_button, start_button_active, help_button_active
     if any([start_button.cursor_collision(),
             help_button.cursor_collision(),
             quit_button.cursor_collision()]):
@@ -120,37 +120,48 @@ def update() -> str:
     elif help_button.button_response():
         transition_animation = True
         after_help_button = True
-    elif quit_button.button_response():
-            return "quit"
 
     if transition_animation:
-        animation_scale += 30
-    if animation_scale >= math.sqrt(window.get_width()//2 + window.get_height()//2):
-        if after_start_button:
-            return "play"
-        elif after_help_button:
-            return "help"
+        animation_scale += 26
+        if animation_scale > window.get_width()//2 + window.get_width()//3:
+            transition_animation = False
+            if after_start_button:
+                start_button_active = True
+            elif after_help_button:
+                help_button_active = True
+    else:
+        after_help_button = False
+        after_start_button = False
+        animation_scale = 0
 
     start_button.update()
     help_button.update()
     quit_button.update()
+
+
+def report_activity() -> str:
+    global start_button_active, help_button_active
+    if quit_button.button_response():
+        return "quit"
+    if start_button_active:
+        start_button_active = False
+        return "play"
+    if help_button_active:
+        help_button_active = False
+        return "help"
     return ""
 
-def draw() -> None:
+
+def draw(window: pygame.surface.Surface) -> None:
     global transition_animation, animation_scale, after_help_button, after_start_button
     window.blit(background, (0, 0))
     window.blit(logo, (window.get_width() - logo_width - x_logo_offset, window.get_height() - logo_height - y_logo_offset))
     start_button.draw(window)
     help_button.draw(window)
     quit_button.draw(window)
-    if transition_animation and animation_scale < window.get_width()//2 + window.get_width()//4:
+    if transition_animation:
         pygame.draw.circle(window, BLACK, (window.get_size()[0]//2, window.get_size()[1]//2), animation_scale)
-    else:
-        transition_animation = False
-        after_help_button = False
-        after_start_button = False
-        animation_scale = 0
-    
+        
 
 def main(window: pygame.surface.Surface):
     width, height = window.get_size()
@@ -158,8 +169,8 @@ def main(window: pygame.surface.Surface):
 
     run, clock = True, pygame.time.Clock()
     while run:
-        update()
-        draw()
+        update(window)
+        draw(window)
         
         pygame.display.update()
         clock.tick(60)
