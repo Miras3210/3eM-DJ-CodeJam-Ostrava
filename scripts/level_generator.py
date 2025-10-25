@@ -1,6 +1,6 @@
 # https://chatgpt.com/g/g-p-68fb43f0eaac8191a8084922ceb5fccc-code-jam/shared/c/68fb54c2-b620-8331-82ba-cfcefd85afbc?owner_user_id=user-RyYxMkbvK9js8SEL50S8uHyy
 
-import pygame
+import pygame, json
 from enum import Enum, auto
 
 class BlockType(Enum):
@@ -113,6 +113,11 @@ def sel_bar():
         if rect.collidepoint(mouse) and mousedown:
             selected_material = btype
 
+def get_grid():
+    height, width = grid.height, grid.width
+    n_grid = [[grid.grid[y][x].type.name for x in range(width)] for y in range(height)]
+    with open("grid_file.json","w") as f:
+        json.dump(n_grid,f)
 
 # setup
 pygame.init()
@@ -149,6 +154,7 @@ while run:
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
+            get_grid()
             run = False
         elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
             run = False

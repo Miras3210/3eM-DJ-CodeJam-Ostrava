@@ -1,11 +1,17 @@
 import pygame, pathlib
 from enum import Enum, auto
 
+with open("grid_file.json","r") as f:
+    grid_file: list[list[str]]
+    exec(f"grid_file = {f.read()}")
+
 class BlockType(Enum):
     AIR = auto()
     GROUND = auto()
     PLATFORM = auto()
     SPIKE = auto()
+    COIN = auto()
+    DOOR = auto()
 
 class PlayerSprite(Enum):
     Base = auto()
@@ -59,11 +65,12 @@ class Block:
         self.texture: pygame.surface.Surface
 
 class Grid:
-    def __init__(self, width: int, height: int) -> None:
+    def __init__(self, width: int, height: int, grid: list[list[str]]) -> None:
         self.width, self.height = width, height
-        self.grid = [[Block(BlockType.AIR) for w in range(width)] for h in range(height)]
-        for block in self.grid[-1]:
-            block.type = BlockType.GROUND
+        # self.grid = [[Block(BlockType.AIR) for w in range(width)] for h in range(height)]
+        self.grid = [[Block(get_grid_block(grid[y][x])) for x in range(width)] for y in range(height)]
+        # for block in self.grid[-1]:
+        #     block.type = BlockType.GROUND
 
     def get_block(self, x: int, y: int) -> 'BlockType':
         return self.grid[y][x].type
@@ -75,7 +82,15 @@ class Grid:
         for y in range(self.height):
             for x in range(self.width):
                 if self.grid[y][x].type == BlockType.GROUND:
-                    pygame.draw.rect(win, (0,0,0), (x*block_size,y*block_size,block_size,block_size))
+                    # pygame.draw.rect(win, (0,0,0), (x*block_size,y*block_size,block_size,block_size))
+                    win.blit(BlockImages.grass_block, (x*block_size,y*block_size,block_size,block_size))
+
+                if self.grid[y][x].type == BlockType.PLATFORM:
+                    win.blit(BlockImages.platform, (x*block_size,y*block_size,block_size,block_size))
+                
+                if self.grid[y][x].type == BlockType.SPIKE:
+                    win.blit(BlockImages.spikes, (x*block_size,y*block_size,block_size,block_size))
+
                 pygame.draw.rect(win, (0,0,0), (x*block_size,y*block_size,block_size,block_size), 2)
 
 
@@ -184,10 +199,28 @@ font = pygame.font.SysFont("Arial Black", 24)
 player: Player
 grid: Grid
 
+def get_grid_block(type_name: str) -> BlockType:
+    match type_name:
+        case "AIR":
+            return BlockType.AIR
+        case "GROUND":
+            return BlockType.GROUND
+        case "PLATFORM":
+            return BlockType.PLATFORM
+        case "SPIKE":
+            return BlockType.SPIKE
+        case "COIN":
+            return BlockType.COIN
+        case "DOOR":
+            return BlockType.DOOR
+        case _:
+            print("fail")
+            return BlockType.AIR
+
 def initialize(width: int, height: int):
     global player, grid
-    grid = Grid(100, 7)
-    grid.set_block(2,5,BlockType.GROUND)
+    grid = Grid(100,7,grid_file)
+    # grid.set_block(2,5,BlockType.GROUND)
     player = Player(0, 0, block_size, block_size)
     player.grid = grid
 
