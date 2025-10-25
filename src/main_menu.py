@@ -46,10 +46,6 @@ class Button:
             self.scale = max(1, self.scale-0.02)
         return False
 
-theme = "Music/Musik/AmbientMenu.wav"
-pygame.mixer.music.load(theme)
-pygame.mixer.music.set_volume(0.2)
-pygame.mixer.music.play(-1)
 
 
 

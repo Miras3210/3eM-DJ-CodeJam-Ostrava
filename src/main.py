@@ -1,11 +1,24 @@
 from enum import Enum, auto
 import pygame
+from pathlib import Path
 
 import main_menu
 import helper
 import dev_mode
 import platformer
 import bsod
+
+pygame.mixer.init()
+
+music_dir = Path(__file__).parent.parent / "Music" / "Musik"
+platformtheme = music_dir / "AmbientPlatformer.mp3"
+
+devtheme = "Music/Musik/AmbientDeveloper.wav"
+theme = "Music/Musik/AmbientMenu.wav"
+
+pygame.mixer.music.load(theme)
+pygame.mixer.music.set_volume(0.2)
+pygame.mixer.music.play(-1)
 
 class Scene(Enum):
     MAIN_MENU = auto()
@@ -33,6 +46,10 @@ def main():
                 ev = main_menu.update(window)
                 if ev == "play":
                     pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
+                    pygame.mixer.music.stop()
+                    pygame.mixer.music.load(platformtheme)
+                    pygame.mixer.music.set_volume(0.2)
+                    pygame.mixer.music.play(-1)
                     scene = Scene.GAME
                 if ev == "help": scene = Scene.HELPER
                 if ev == "quit": run = False
@@ -46,11 +63,21 @@ def main():
                 if ev == "bsod":
                     bsod.ticker = 0
                     scene = Scene.BSOD
-                if ev == "switch": scene = Scene.DEV
+                if ev == "switch":
+                    pygame.mixer.music.stop()
+                    pygame.mixer.music.load(devtheme)
+                    pygame.mixer.music.set_volume(0.1)
+                    pygame.mixer.music.play(-1)
+                    scene = Scene.DEV
                 platformer.draw(window)
             case Scene.DEV:
                 ev = dev_mode.update(key)
-                if ev == "switch": scene = Scene.GAME
+                if ev == "switch": 
+                    scene = Scene.GAME
+                    pygame.mixer.music.stop()
+                    pygame.mixer.music.load(platformtheme)
+                    pygame.mixer.music.set_volume(0.2)
+                    pygame.mixer.music.play(-1)
                 dev_mode.draw_game(window)
             case Scene.BSOD:
                 ev = bsod.update(key)
