@@ -1,4 +1,5 @@
 import pygame
+import random
 from pathlib import Path
 from enum import Enum, auto
 pygame.display.init()
@@ -63,6 +64,7 @@ class BlockImages:
     air                = _img_load_helper(block_dir / "air.png")
     cloud1             = _img_load_helper(block_dir / "cloud1.png")
     cloud2             = _img_load_helper(block_dir / "cloud2.png")
+    cloud3             = _img_load_helper(block_dir / "cloud3.png")
     dirt_block         = _img_load_helper(block_dir / "dirt_block.png")
     grass              = _img_load_helper(block_dir / "grass.png")
     grass_inner_corner = _img_load_helper(block_dir / "grass_inner_corner.png")
@@ -142,6 +144,15 @@ class Grid:
 
                 if self.get_block(x, y) == BlockType.DOOR:
                     self.grid[y][x].texture.blit(BlockImages.door, (0,0))
+
+                if self.get_block(x, y) == BlockType.AIR and not random.randint(0,25):
+                    self.grid[y][x].texture.blit(BlockImages.cloud1, (0,0))
+
+                if self.get_block(x, y) == BlockType.AIR and not random.randint(0,25):
+                    self.grid[y][x].texture.blit(BlockImages.cloud2, (0,0))
+
+                if self.get_block(x, y) == BlockType.AIR and not random.randint(0,25):
+                    self.grid[y][x].texture.blit(BlockImages.cloud3, (0,0))
 
     def draw(self, win: pygame.surface.Surface, offsetx: int) -> None:
         for y in range(self.height):
