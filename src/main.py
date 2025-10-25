@@ -66,7 +66,6 @@ def main():
                 if ev == "next":
                     platformer.level += 1
                     platformer.initialize(100,7)
-                if ev == "switch": scene = Scene.DEV
                 if ev == "switch":
                     pygame.mixer.music.stop()
                     pygame.mixer.music.load(devtheme)
