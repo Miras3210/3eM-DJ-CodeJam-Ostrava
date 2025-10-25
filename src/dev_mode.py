@@ -1,6 +1,13 @@
 import pygame
 from enum import Enum, auto
 import pathlib
+pygame.mixer.init()
+
+theme = "Music/Musik/AmbientDeveloper.wav"
+pygame.mixer.music.load(theme)
+pygame.mixer.music.set_volume(0.2)
+pygame.mixer.music.play(-1)
+
 
 class BlockType(Enum):
     Air = auto()
@@ -158,7 +165,7 @@ class GridProcessor:
             if block == BlockType.Empty:
                 break
             execution.append(block.name)
-        
+
         executed = False
         if len(parameters) >= 3:
             for i in range(len(parameters)):
@@ -171,11 +178,24 @@ class GridProcessor:
                     executed = not executed
             except Exception:
                 executed = False
+        if execution:
+            if execution[0] == "coin":
+                return {"coin_enable" : True}
+            if execution[0] == "open":
+                return {"gate_open" : True}
+            if execution[0] == "open":
+                return {"gate_open" : True}
+            
+            ...
 
         print(f"If-valid: {executed}")
         print(f"if_execute: {execution}")
         print(f"---")
     def eval_grid(self):
+        data = {
+            "coin_enable" : False,
+            
+        }
         for y in range(self.grid.height):
             for x in range(self.grid.width):
                 block = self.grid.get_block(x,y)
@@ -280,6 +300,7 @@ class DevPlayer:
             case _:
                 ...
 
+
 font: pygame.font.Font
 grid: Grid
 player: DevPlayer
@@ -300,7 +321,7 @@ def initialize(width: int, height: int):
     grid.set_block(3,1,BlockType.Plus)
     grid.set_block(4,1,BlockType.Num_1)
     grid.set_block(5,1,BlockType.Equal)
-    grid.set_block(6,1,BlockType.Num_2)
+    grid.set_block(6,2,BlockType.Num_2)
     grid.set_block(2,2,BlockType.Coin)
     grid.lock_block(2,2)
     grid.lock_block(1,1)

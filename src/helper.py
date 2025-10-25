@@ -3,6 +3,7 @@ import pathlib
 
 # Loading images
 base = pathlib.Path(__file__).parent.parent / "Textures" / "Misc"
+exit_button_image: pygame.surface.Surface = pygame.image.load(base / "X.png")
 slide_image1: pygame.surface.Surface = pygame.image.load(base / "help_screen.png")
 slide_image2: pygame.surface.Surface = pygame.image.load(base / "help_screen2.png")
 slide_image3: pygame.surface.Surface = pygame.image.load(base / "help_screen3.png")
@@ -35,11 +36,9 @@ class Button:
                 self.rect.width*self.scale,
                 self.rect.height*self.scale
             )
-            #win.blit(pygame.transform.scale(self.image, (anim_rect.width, anim_rect.height)), (anim_rect.x, anim_rect.y))
-            pygame.draw.rect(win, RED, anim_rect)
+            win.blit(pygame.transform.scale(self.image, (anim_rect.width, anim_rect.height)), (anim_rect.x, anim_rect.y))
         else:
-            #win.blit(pygame.transform.scale(self.image, (self.rect.width, self.rect.height)), (self.rect.x, self.rect.y))
-            pygame.draw.rect(win, RED, self.rect)
+            win.blit(pygame.transform.scale(self.image, (self.rect.width, self.rect.height)), (self.rect.x, self.rect.y))
 
     def cursor_collision(self) -> bool:
         return self.rect.collidepoint(pygame.mouse.get_pos())
@@ -74,10 +73,10 @@ exit_button: Button
 #left_arrow_button: Button
 #right_arrow_button: Button
 
-button_scale: int = 2
-button_width: int = 64*button_scale
+button_scale: int = 3
+button_width: int = exit_button_image.get_width()*button_scale
 button_height: int = button_width
-button_screen_offset: int = 26
+button_screen_offset: int = 10
 
 slides: list['Slide'] = []
 slide_index: int = 0
@@ -92,7 +91,7 @@ def initialize(width: int, height: int) -> None:
         button_screen_offset,
         button_width,
         button_height,
-        pygame.Surface((1, 1))
+        exit_button_image
     )
 
     # left_arrow_button = Button(
