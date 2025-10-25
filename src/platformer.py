@@ -176,7 +176,7 @@ class Grid:
                 if self.get_block(x, y) == BlockType.AIR and not random.randint(0,6) and self.get_block(x, y+1) == BlockType.GROUND and y>0:
                     self.grid[y][x].texture.blit(BlockImages.rock, (0,0))
 
-                if self.get_block(x, y) == BlockType.AIR and not random.randint(0,1000) and self.get_block(x, y+1) == BlockType.GROUND and y>0:
+                if self.get_block(x, y) == BlockType.AIR and not random.randint(0,3000) and self.get_block(x, y+1) == BlockType.GROUND and y>0:
                     self.grid[y][x].texture.blit(BlockImages.michal, (0,0))
 
     def draw(self, win: pygame.surface.Surface, offsetx: int) -> None:
@@ -333,7 +333,7 @@ font = pygame.font.SysFont("Arial Black", 24)
 player: Player
 grid: Grid
 indicator: pygame.Surface
-level = 1
+level = 11
 gravity = 1.5
 
 camx = 0
