@@ -133,7 +133,7 @@ def get_grid():
     end+=1
     n_grid = []
     with open("grid_file.grid","w") as f:
-        f.write(f"{end};{height}")
+        f.write(f"{end};{height}\n")
         for x in range(end):
             f.write("".join([conversion.get(grid.grid[y][x].type, " ") for y in range(height)]))
             f.write("\n")
