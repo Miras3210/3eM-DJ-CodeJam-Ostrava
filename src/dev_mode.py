@@ -134,11 +134,13 @@ class Grid:
 
         for y in range(len(self.grid)):
             for x in range(len(self.grid[0])):
-                img = self.imgs.get_image(self.grid[y][x].type)
+                img = self.imgs.get_image(self.get_block(x,y))
+                if self.get_block(x,y) == BlockType.Empty and self.get_block(x,y-1) == BlockType.If:
+                    img = self.imgs.get_image(BlockType.Arrow_right)
                 nsurf.blit(img, (x * block_size - scroll_x, y * block_size - scroll_y))
                 if self.grid[y][x].locked:
                     nsurf.blit(self.imgs.get_image(BlockType.Locked), (x * block_size - scroll_x, y * block_size - scroll_y))
-                # if (x,y) == (self.player.x, self.player.y):
+
         pl = self.player
         nsurf.blit(pl.get_image(), (pl.x * block_size - scroll_x, pl.y * block_size - scroll_y))
         if pl.selected:
@@ -178,29 +180,26 @@ class GridProcessor:
                     executed = not executed
             except Exception:
                 executed = False
-        if execution:
-            if execution[0] == "coin":
+        if execution and executed:
+            if execution[0] == "Coin":
                 return {"coin_enable" : True}
-            if execution[0] == "open":
+            if execution[0] == "Open":
                 return {"gate_open" : True}
-            if execution[0] == "open":
-                return {"gate_open" : True}
-            
-            ...
+            if execution[0] == "Close":
+                return {"gate_open" : False}
 
         print(f"If-valid: {executed}")
         print(f"if_execute: {execution}")
         print(f"---")
+        return {}
     def eval_grid(self):
-        data = {
-            "coin_enable" : False,
-            
-        }
+        data = {}
         for y in range(self.grid.height):
             for x in range(self.grid.width):
                 block = self.grid.get_block(x,y)
                 if block == BlockType.If:
-                    self.if_chain(x+1,y)
+                    data.update(self.if_chain(x+1,y))
+        print(data)
 
 class DevPlayer:
     def __init__(self, x:int, y:int, w:int, h:int) -> None:
