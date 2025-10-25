@@ -11,12 +11,12 @@ import bsod
 pygame.mixer.init()
 
 music_dir = Path(__file__).parent.parent / "Music" / "Musik"
-platformtheme = music_dir / "AmbientPlatformer.mp3"
+platform_theme = music_dir / "AmbientPlatformer.mp3"
 
-devtheme = "Music/Musik/AmbientDeveloper.wav"
-theme = "Music/Musik/AmbientMenu.wav"
+dev_theme = music_dir / "AmbientDeveloper.wav"
+menu_theme = music_dir / "AmbientMenu.wav"
 
-pygame.mixer.music.load(theme)
+pygame.mixer.music.load(menu_theme)
 pygame.mixer.music.set_volume(0.2)
 pygame.mixer.music.play(-1)
 
@@ -47,7 +47,7 @@ def main():
                 if ev == "play":
                     pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
                     pygame.mixer.music.stop()
-                    pygame.mixer.music.load(platformtheme)
+                    pygame.mixer.music.load(platform_theme)
                     pygame.mixer.music.set_volume(0.2)
                     pygame.mixer.music.play(-1)
                     scene = Scene.GAME
@@ -68,7 +68,7 @@ def main():
                     platformer.initialize(width,height)
                 if ev == "switch":
                     pygame.mixer.music.stop()
-                    pygame.mixer.music.load(devtheme)
+                    pygame.mixer.music.load(dev_theme)
                     pygame.mixer.music.set_volume(0.1)
                     pygame.mixer.music.play(-1)
                     scene = Scene.DEV
@@ -78,7 +78,7 @@ def main():
                 if ev == "switch": 
                     scene = Scene.GAME
                     pygame.mixer.music.stop()
-                    pygame.mixer.music.load(platformtheme)
+                    pygame.mixer.music.load(platform_theme)
                     pygame.mixer.music.set_volume(0.2)
                     pygame.mixer.music.play(-1)
                 dev_mode.draw_game(window)

@@ -120,13 +120,11 @@ def get_grid():
         else: end-= 1; continue
         break
     end+=1
-    n_grid = []
     with open("grid_file.grid","w") as f:
         f.write(f"{end};{height}\n")
         for x in range(end):
             f.write("".join([conversion.get(grid.grid[y][x].type, " ") for y in range(height)]))
             f.write("\n")
-        # json.dump(n_grid,f)
 
 
 # setup
