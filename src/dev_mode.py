@@ -3,15 +3,24 @@ from enum import Enum, auto
 import pathlib
 
 class BlockType(Enum):
+    Air = auto()
+    Arrow_right = auto()
     No = auto()
     Coin = auto()
+    Close = auto()
     Death = auto()
     Empty = auto()
     Equal = auto()
     Glop = auto()
+    Grass = auto()
+    Honey = auto()
+    Ice = auto()
     If = auto()
+    Jump = auto()
+    Key = auto()
     Locked = auto()
     Minus = auto()
+    Not = auto()
     Num_0 = auto()
     Num_1 = auto()
     Num_2 = auto()
@@ -25,6 +34,11 @@ class BlockType(Enum):
     Plus = auto()
     Spike = auto()
     Selected = auto()
+    Vel = auto()
+    Touch = auto()
+    Open = auto()
+    X = auto()
+    Y = auto()
 
 class PlayerDir(Enum):
     Idle = auto()
@@ -43,6 +57,20 @@ class Image_storage:
     def __init__(self):
         block_folder = dev_folder / "blocks"
         self.block_images = {
+            BlockType.Air    : "",
+            BlockType.Arrow_right: "",
+            BlockType.Close  : "",
+            BlockType.Grass  : "",
+            BlockType.Honey  : "",
+            BlockType.Ice    : "",
+            BlockType.Jump   : "",
+            BlockType.Key    : "",
+            BlockType.Not    : "",
+            BlockType.Vel    : "",
+            BlockType.Touch  : "",
+            BlockType.Open   : "",
+            BlockType.X      : "",
+            BlockType.Y      : "",
             BlockType.Coin   : _img_load_helper(block_folder / "coin_block.png", block_size),
             BlockType.Empty  : _img_load_helper(block_folder / "dev_block.png", block_size),
             BlockType.Equal  : _img_load_helper(block_folder / "equal_block.png", block_size),
