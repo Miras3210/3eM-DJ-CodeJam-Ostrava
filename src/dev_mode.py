@@ -110,7 +110,9 @@ class Grid:
         self.imgs = Image_storage()
         self.player = player
     def get_block(self, x:int, y:int) -> 'BlockType':
-        return self.grid[y][x].type
+        if 0 <= y < self.height and 0 <= x < self.width:
+            return self.grid[y][x].type
+        return BlockType.No
     def set_block(self, x: int, y: int, btype: 'BlockType') -> None:
         self.grid[y][x].type = btype
     def lock_block(self, x: int, y: int) -> None:
@@ -131,7 +133,8 @@ class Grid:
                 img = self.imgs.get_image(self.get_block(x,y))
                 if self.get_block(x,y) == BlockType.Empty and self.get_block(x,y-1) == BlockType.If:
                     img = self.imgs.get_image(BlockType.Arrow_right)
-                nsurf.blit(img, (x * block_size - scroll_x, y * block_size - scroll_y))
+                if self.get_block(x,y) != BlockType.No:
+                    nsurf.blit(img, (x * block_size - scroll_x, y * block_size - scroll_y))
                 if self.grid[y][x].locked:
                     nsurf.blit(self.imgs.get_image(BlockType.Locked), (x * block_size - scroll_x, y * block_size - scroll_y))
 
@@ -148,65 +151,148 @@ class Grid:
 class GridProcessor:
     def __init__(self, grid: 'Grid') -> None:
         self.grid = grid
-    def if_chain(self, x:int,y:int):
+
+    def safeeval(self, text: str):
+        try:
+            return eval(text, {}, {})
+        except Exception:
+            return None
+
+    def convert_to_val(self, parameters: list[str]) -> list[str]:
+        tokens = {
+            "Plus": "+",
+            "Minus": "-",
+            "Equal": "==",
+            "Not": " not ",
+        }
+        out = []
+        for token in parameters:
+            if token.startswith("Num_"):
+                out.append(token[4:])
+            else:
+                out.append(tokens.get(token, token))
+        return out
+
+    def execute_order(self, actions: list[str]) -> dict:
+        """
+        Handles commands and assignments.
+        Example:
+          [Vel, Equal, Num_2]  -> {"vel": 2}
+          [Jump, Equal, Num_3] -> {"jump": 3}
+          [Coin]               -> {"coin_enable": True}
+        #   [Death]              -> {"action": "death"}
+        """
+        rdata = {}
+
+        # 1️⃣ Simple one-block commands
+        for ex in actions:
+            if ex == "Coin":
+                rdata["coin_enable"] = True
+            elif ex == "Open":
+                rdata["gate_open"] = True
+            elif ex == "Close":
+                rdata["gate_open"] = False
+            # elif ex == "Death":
+            #     # Standalone death (not under If)
+            #     rdata["action"] = "death"
+
+        # 2️⃣ Assignment type commands
+        if len(actions) >= 3 and actions[1] == "Equal":
+            variable = actions[0].lower()  # e.g., Vel -> "vel"
+            value_expr = "".join(self.convert_to_val(actions[2:]))
+            value = self.safeeval(value_expr)
+            if value is not None:
+                rdata[variable] = value
+
+        return rdata
+
+    def if_chain(self, x:int, y:int):
         parameters: list[str] = []
         for off in range(x, self.grid.width):
-            block = self.grid.get_block(off,y)
-            if block == BlockType.Empty:
+            block = self.grid.get_block(off, y)
+            if block in (BlockType.Empty, BlockType.No):
                 break
             parameters.append(block.name)
-        execution = []
+
+        actions = []
         for off in range(x, self.grid.width):
-            block = self.grid.get_block(off,y+1)
-            if block == BlockType.Empty:
+            block = self.grid.get_block(off, y + 1)
+            if block in (BlockType.Empty, BlockType.No):
                 break
-            execution.append(block.name)
+            actions.append(block.name)
 
         executed = False
         if len(parameters) >= 3:
-            for i in range(len(parameters)):
-                if parameters[i].startswith("Num_"):
-                    parameters[i] = parameters[i][4:]
-                parameters[i] = parameters[i].replace("Plus", "+").replace("Equal", "==").replace("Minus", "-")
-            try:
-                executed = eval("".join(parameters), {}, {})
-                if parameters.__contains__("Not"):
-                    executed = not executed
-            except Exception:
+            parameters = self.convert_to_val(parameters)
+            executed = self.safeeval("".join(parameters))
+            if executed is None:
                 executed = False
-        rdata = {}
-        if execution and executed:
-            for ex in execution:
-                if ex == "Coin":
-                    rdata.update({"coin_enable" : True})
-                if ex == "Open":
-                    rdata.update({"gate_open" : True})
-                if ex == "Close":
-                    rdata.update({"gate_open" : False})
+            elif "Not" in parameters:
+                executed = not executed
 
-        print(f"If-valid: {executed}")
-        print(f"if_execute: {execution}")
+        rdata = {}
+
+        # ✅ FIX START — handle conditional Death properly
+        if actions:
+            # if condition true → execute normally
+            if executed:
+                rdata.update(self.execute_order(actions))
+            # if condition references Death block → mark as on_death trigger
+            elif "Death" in parameters or parameters and parameters[0] == "Death":
+                rdata["on_death"] = self.execute_order(actions)
+        # ✅ FIX END
+
+        print(f"Executed: {executed} : {actions}")
         print(f"---")
         return rdata
+
     def eval_grid(self):
         data = {}
         under_if = False
+
         for y in range(self.grid.height):
             for x in range(self.grid.width):
-                block = self.grid.get_block(x,y)
-                if block == BlockType.Empty:
+                block = self.grid.get_block(x, y)
+                if block in (BlockType.Empty, BlockType.No):
                     under_if = False
                     continue
                 if under_if:
                     continue
+
+                # 🟣 1. Handle IF blocks
                 if block == BlockType.If:
-                    data.update(self.if_chain(x+1,y))
-                
-                if self.grid.get_block(x-1,y-1) == BlockType.If:
+                    data.update(self.if_chain(x + 1, y))
+
+                # 🟢 2. Handle single top-level commands (Coin, Open, Close)
+                elif block in (BlockType.Coin, BlockType.Open, BlockType.Close):
+                    result = self.execute_order([block.name])
+                    if result:
+                        data.update(result)
+
+                # 🔵 3. Handle top-level assignments (Vel, Jump)
+                #     Skip if this row belongs to an If chain above.
+                elif block in (BlockType.Vel, BlockType.Jump) and (
+                    self.grid.get_block(x - 1, y - 1) != BlockType.If
+                ):
+                    actions = []
+                    for off in range(x, self.grid.width):
+                        b = self.grid.get_block(off, y)
+                        if b in (BlockType.Empty, BlockType.No):
+                            break
+                        actions.append(b.name)
+                    result = self.execute_order(actions)
+                    if result:
+                        data.update(result)
+
+                # prevent re-evaluation of lower If chains
+                if self.grid.get_block(x - 1, y - 1) == BlockType.If:
                     under_if = True
                     continue
-                
+
         print(data)
+        return data
+
+
 
 class DevPlayer:
     def __init__(self, x:int, y:int, w:int, h:int) -> None:
@@ -231,10 +317,12 @@ class DevPlayer:
         return self.player_images.get(self.direction, self.player_images[PlayerDir.Idle])
 
     def grid_block(self, x:int, y:int) -> 'BlockType':
-        if 0 <= self.y+y < self.h and 0 <= self.x+x < self.w:
-            if self.grid.grid[self.y+y][self.x+x].locked:
+        gx = self.x + x
+        gy = self.y + y
+        if 0 <= gx < self.grid.width and 0 <= gy < self.grid.height:
+            if self.grid.grid[gy][gx].locked:
                 return BlockType.No
-            return self.grid.grid[self.y+y][self.x+x].type
+            return self.grid.grid[gy][gx].type
         return BlockType.No
 
     def swap_grid_block(self, x:int,y:int,x2:int,y2:int):
@@ -323,17 +411,11 @@ def initialize(width: int, height: int):
     grid = Grid(*grid_size, player)
     player.grid = grid
     grid.set_block(1,1,BlockType.If)
-    grid.set_block(2,1,BlockType.Num_1)
-    grid.set_block(3,1,BlockType.Plus)
-    grid.set_block(4,1,BlockType.Num_1)
-    grid.set_block(5,1,BlockType.Equal)
-    grid.set_block(6,2,BlockType.Num_2)
-    grid.set_block(2,2,BlockType.Coin)
-    grid.lock_block(2,2)
-    grid.lock_block(1,1)
+
+    grid.set_block(4,3,BlockType.No)
 
     process = GridProcessor(grid)
-    
+
     global indicator
     indicator = pygame.transform.scale_by(pygame.image.load(dev_folder / "blocks" / "mode_dev.png"), 3)
 
@@ -377,7 +459,6 @@ def update(key: int):
 def draw_game(window: pygame.Surface):
     window.fill((44,47,63))
     width, height = window.get_size()
-    # pygame.draw.rect(window, (0,0,0), (0,0,width*0.05,height))
     # dev mode indicator
     window.blit(indicator, (10,10))
 
