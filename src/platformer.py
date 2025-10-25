@@ -256,7 +256,7 @@ class Player:
             self.move_counter += 1
 
     # velocity
-        self.y_vel += gravity
+        self.y_vel += gravity * param.get("jump", 1)
         if abs(self.x_vel) < 0.1: self.x_vel = 0
         else: self.x_vel *= self.SLIDE
 
@@ -286,6 +286,7 @@ class Player:
                 if block.type == BlockType.DOOR and self.hitbox.colliderect((x*block_size, y*block_size, block_size, block_size)):
                     self.win = True
                 if block.type == BlockType.COIN and self.hitbox.colliderect((x*block_size+20, y*block_size+20, block_size-40, block_size-40)):
+                    self.grid.set_block(x,y, BlockType.COIN)
                     self.coin_counter += 1
                 if (block.type == BlockType.GROUND and self.y_updated_rect.colliderect((x*block_size, y*block_size, block_size, block_size))) \
                   or (self.y_vel > 0 and self.hitbox.bottom <= y*block_size and block.type == BlockType.PLATFORM and self.y_updated_rect.colliderect((x*block_size, y*block_size, block_size, 36))):

@@ -133,7 +133,7 @@ window = pygame.display.set_mode((1600, 900))
 pygame.display.set_caption("Selection Bar Example")
 font = pygame.font.SysFont("Arial Black", 25)
 
-grid = Grid(100, 7)
+grid = Grid(500, 7)
 
 run = True
 clock = pygame.time.Clock()
@@ -142,9 +142,9 @@ offx = 0
 while run:
     keys = pygame.key.get_pressed()
     if keys[pygame.K_a]:
-        offx -= 5
+        offx -= 10
     if keys[pygame.K_d]:
-        offx += 5
+        offx += 10
 
     mx, my = pygame.mouse.get_pos()
     if pygame.mouse.get_pressed()[0] and mx < 1300:
