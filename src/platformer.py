@@ -263,6 +263,8 @@ class Player:
             for x, block in enumerate(line):
                 if block.type == BlockType.SPIKE and self.hitbox.colliderect((x*block_size, y*block_size+82, block_size, 36)):
                     self.alive = False
+                    SoundEffects.death.set_volume(0.1)
+                    SoundEffects.death.play()
                 if block.type == BlockType.DOOR and self.hitbox.colliderect((x*block_size, y*block_size, block_size, block_size)):
                     self.win = True
                 if block.type == BlockType.COIN and self.hitbox.colliderect((x*block_size+20, y*block_size+20, block_size-40, block_size-40)):
@@ -286,6 +288,8 @@ class Player:
         
         if self.y > self.VOID:
             self.alive = False
+            SoundEffects.death.set_volume(0.1)
+            SoundEffects.death.play()
             # self.y_vel = 0
         
         if self.y_vel == 0 and self.x_vel == 0:
