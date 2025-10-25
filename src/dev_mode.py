@@ -398,7 +398,7 @@ class DevPlayer:
 font: pygame.font.Font
 grid: Grid
 player: DevPlayer
-process: GridProcessor
+processor: GridProcessor
 indicator: pygame.Surface
 grid_size = (9,6)
 
@@ -406,15 +406,22 @@ def initialize(width: int, height: int):
     global font
     font = pygame.font.SysFont("Arial Black", 24)
 
-    global grid, player, process
+    global grid, player, processor
     player = DevPlayer(1,2,*grid_size)
     grid = Grid(*grid_size, player)
     player.grid = grid
     grid.set_block(1,1,BlockType.If)
+    grid.set_block(2,1,BlockType.Num_1)
+    grid.set_block(3,1,BlockType.Equal)
+    grid.set_block(4,1,BlockType.Num_1)
+    grid.set_block(2,2,BlockType.Vel)
+    grid.set_block(2,4,BlockType.Jump)
+    grid.set_block(3,2,BlockType.Equal)
+    grid.set_block(4,2,BlockType.Num_2)
 
     grid.set_block(4,3,BlockType.No)
 
-    process = GridProcessor(grid)
+    processor = GridProcessor(grid)
 
     global indicator
     indicator = pygame.transform.scale_by(pygame.image.load(dev_folder / "blocks" / "mode_dev.png"), 3)
@@ -425,7 +432,7 @@ def update(key: int):
         elif key == pygame.K_s : player.move(PlayerDir.Down)
         elif key == pygame.K_d : player.move(PlayerDir.Right)
         elif key == pygame.K_a : player.move(PlayerDir.Left)
-        elif key == pygame.K_e : process.eval_grid()
+        elif key == pygame.K_e : processor.eval_grid()
         elif key == pygame.K_UP    and player.grid_block(0,-1) != BlockType.Empty and player.grid_block(0,-1) != BlockType.No:
             player.selected = not player.selected
             player.select_dir = PlayerDir.Up
