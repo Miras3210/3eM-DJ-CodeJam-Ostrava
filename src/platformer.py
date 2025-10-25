@@ -258,6 +258,11 @@ class Player:
             self.y += int(self.y_vel)
             self.on_ground = False
             self.on_ground_counter = 0
+            
+        for y, line in enumerate(self.grid.grid):
+            for x, block in enumerate(line):
+                if block.type == BlockType.SPIKE and self.hitbox.colliderect((x*block_size, y*block_size+82, block_size, 36)):
+                    self.alive = False
         
         if self.y > self.VOID:
             self.alive = False
