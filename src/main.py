@@ -32,11 +32,15 @@ def main():
     width, height = window.get_size()
     scene = Scene.MAIN_MENU
 
+    platformer.level = 1
+
     main_menu.initialize(width, height)
     helper.initialize(width, height)
     dev_mode.initialize(width, height)
     platformer.initialize(width, height)
     bsod.initialize(width, height)
+    
+    param = {}
 
     key = 0
     run, clock = True, pygame.time.Clock()
@@ -59,7 +63,7 @@ def main():
                 if ev == "exit": scene = Scene.MAIN_MENU
                 helper.draw(window)
             case Scene.GAME:
-                ev = platformer.update(key, width)
+                ev = platformer.update(key, width, param)
                 if ev == "bsod":
                     bsod.ticker = 0
                     scene = Scene.BSOD
@@ -75,12 +79,13 @@ def main():
                 platformer.draw(window)
             case Scene.DEV:
                 ev = dev_mode.update(key)
-                if ev == "switch": 
+                if ev == "switch":
                     scene = Scene.GAME
                     pygame.mixer.music.stop()
                     pygame.mixer.music.load(platform_theme)
                     pygame.mixer.music.set_volume(0.2)
                     pygame.mixer.music.play(-1)
+                    param = dev_mode.processor.eval_grid()
                 dev_mode.draw_game(window)
             case Scene.BSOD:
                 ev = bsod.update(key)

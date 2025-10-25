@@ -241,18 +241,18 @@ class Player:
         effect.set_volume(volume)
         effect.play()
 
-    def update(self, keys: pygame.key.ScancodeWrapper) -> None:
+    def update(self, keys: pygame.key.ScancodeWrapper, param: dict) -> None:
         if keys[pygame.K_w] or keys[pygame.K_UP] or keys[pygame.K_SPACE]:
             if self.on_ground:
                 self.sound(SoundEffects.jump, 0.2)
-                self.y_vel = -self.JUMP
+                self.y_vel = -(self.JUMP * param.get("jump", 1))
 
         if keys[pygame.K_a] or keys[pygame.K_LEFT]:
-            self.x_vel -= self.SPEED
+            self.x_vel -= (self.SPEED * param.get("vel", 1))
             self.move_counter += 1
             
         if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
-            self.x_vel += self.SPEED
+            self.x_vel += (self.SPEED * param.get("vel", 1))
             self.move_counter += 1
 
     # velocity
@@ -394,10 +394,10 @@ def draw(win: pygame.surface.Surface) -> None:
     win.blit(font.render(f"2: {player.on_ground}", 1, (0,0,0)), (10, 50))
     win.blit(font.render(f"3: {player.y_vel}", 1, (0,0,0)), (10, 70))
 
-def update(key: int, screen_width: int) -> str:
+def update(key: int, screen_width: int, param: dict) -> str:
     global camx
     keys = pygame.key.get_pressed()
-    player.update(keys)
+    player.update(keys, param)
 
     camx = int(min(max(0, (camx+player.x-player.width*3)/2), grid.width*block_size - screen_width))
 
@@ -414,7 +414,7 @@ def main(window: pygame.surface.Surface):
     initialize(width, height)
     key = 0
     while run:
-        update(key, width)
+        # update(key, width)
         key = 0
 
         draw(window)
