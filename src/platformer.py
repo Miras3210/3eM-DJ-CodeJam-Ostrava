@@ -303,8 +303,9 @@ def draw(win: pygame.surface.Surface) -> None:
 
     win.blit(indicator, (10,10))
     
-    win.blit(font.render(f"y: {player.y}", 1, (0,0,0)), (10, 30))
-    win.blit(font.render(f"alive: {player.alive}", 1, (0,0,0)), (10, 50))
+    win.blit(font.render(f"1: {player.afk_counter}", 1, (0,0,0)), (10, 30))
+    win.blit(font.render(f"2: {player}", 1, (0,0,0)), (10, 50))
+    win.blit(font.render(f"3: {player}", 1, (0,0,0)), (10, 70))
 
 def update(key: int, screen_width: int) -> str:
     global camx
