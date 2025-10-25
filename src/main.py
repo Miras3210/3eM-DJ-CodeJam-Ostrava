@@ -65,7 +65,7 @@ def main():
                     scene = Scene.BSOD
                 if ev == "next":
                     platformer.level += 1
-                    platformer.initialize(100,7)
+                    platformer.initialize(width,height)
                 if ev == "switch":
                     pygame.mixer.music.stop()
                     pygame.mixer.music.load(devtheme)
