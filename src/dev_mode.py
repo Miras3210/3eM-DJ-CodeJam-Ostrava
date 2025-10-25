@@ -57,28 +57,23 @@ class Image_storage:
     def __init__(self):
         block_folder = dev_folder / "blocks"
         self.block_images = {
-            BlockType.Air    : "",
-            BlockType.Arrow_right: "",
-            BlockType.Close  : "",
-            BlockType.Grass  : "",
-            BlockType.Honey  : "",
-            BlockType.Ice    : "",
-            BlockType.Jump   : "",
-            BlockType.Key    : "",
-            BlockType.Not    : "",
-            BlockType.Vel    : "",
-            BlockType.Touch  : "",
-            BlockType.Open   : "",
-            BlockType.X      : "",
-            BlockType.Y      : "",
+            BlockType.Air    : _img_load_helper(block_folder / "air_block.png", block_size),
+            BlockType.Arrow_right: _img_load_helper(block_folder / "arrow_right.png", block_size),
+            BlockType.Close  : _img_load_helper(block_folder / "close_block.png", block_size),
             BlockType.Coin   : _img_load_helper(block_folder / "coin_block.png", block_size),
+            BlockType.Death  : _img_load_helper(block_folder / "death_block.png", block_size),
             BlockType.Empty  : _img_load_helper(block_folder / "dev_block.png", block_size),
             BlockType.Equal  : _img_load_helper(block_folder / "equal_block.png", block_size),
-            BlockType.Death  : _img_load_helper(block_folder / "death_block.png", block_size),
             BlockType.Glop   : _img_load_helper(block_folder / "glop_block.png", block_size),
+            BlockType.Grass  : _img_load_helper(block_folder / "grass_block.png", block_size),
+            BlockType.Honey  : _img_load_helper(block_folder / "honey_block.png", block_size),
+            BlockType.Ice    : _img_load_helper(block_folder / "ice_block.png", block_size),
             BlockType.If     : _img_load_helper(block_folder / "if_block.png", block_size),
+            BlockType.Jump   : _img_load_helper(block_folder / "jump_block.png", block_size),
+            BlockType.Key    : _img_load_helper(block_folder / "key_block.png", block_size),
             BlockType.Locked : _img_load_helper(block_folder / "locked_overlay.png", block_size),
             BlockType.Minus  : _img_load_helper(block_folder / "minus_block.png", block_size),
+            BlockType.Not    : _img_load_helper(block_folder / "not_block.png", block_size),
             BlockType.Num_0  : _img_load_helper(block_folder / "zero_block.png", block_size),
             BlockType.Num_1  : _img_load_helper(block_folder / "one_block.png", block_size),
             BlockType.Num_2  : _img_load_helper(block_folder / "two_block.png", block_size),
@@ -89,9 +84,14 @@ class Image_storage:
             BlockType.Num_7  : _img_load_helper(block_folder / "seven_block.png", block_size),
             BlockType.Num_8  : _img_load_helper(block_folder / "eight_block.png", block_size),
             BlockType.Num_9  : _img_load_helper(block_folder / "nine_block.png", block_size),
+            BlockType.Open   : _img_load_helper(block_folder / "open_block.png", block_size),
             BlockType.Plus   : _img_load_helper(block_folder / "plus_block.png", block_size),
-            BlockType.Spike  : _img_load_helper(block_folder / "spike_block.png", block_size),
             BlockType.Selected:_img_load_helper(block_folder / "selected_overlay.png", block_size),
+            BlockType.Spike  : _img_load_helper(block_folder / "spike_block.png", block_size),
+            BlockType.Touch  : _img_load_helper(block_folder / "touch_block.png", block_size),
+            BlockType.Vel    : _img_load_helper(block_folder / "speed_block.png", block_size),
+            BlockType.X      : _img_load_helper(block_folder / "x_block.png", block_size),
+            BlockType.Y      : _img_load_helper(block_folder / "y_block.png", block_size),
         }
 
     def get_image(self, btype: 'BlockType') -> pygame.Surface:
@@ -142,6 +142,46 @@ class Grid:
         # Draw the clipped result onto the main display
         display.blit(nsurf, (offset_x, offset_y))
 
+class GridProcessor:
+    def __init__(self, grid: 'Grid') -> None:
+        self.grid = grid
+    def if_chain(self, x:int,y:int):
+        parameters: list[str] = []
+        for off in range(x, self.grid.width):
+            block = self.grid.get_block(off,y)
+            if block == BlockType.Empty:
+                break
+            parameters.append(block.name)
+        execution = []
+        for off in range(x, self.grid.width):
+            block = self.grid.get_block(off,y+1)
+            if block == BlockType.Empty:
+                break
+            execution.append(block.name)
+        
+        executed = False
+        if len(parameters) >= 3:
+            for i in range(len(parameters)):
+                if parameters[i].startswith("Num_"):
+                    parameters[i] = parameters[i][4:]
+                parameters[i] = parameters[i].replace("Plus", "+").replace("Equal", "==").replace("Minus", "-")
+            try:
+                executed = eval("".join(parameters), {}, {})
+                if parameters.__contains__("Not"):
+                    executed = not executed
+            except Exception:
+                executed = False
+
+        print(f"If-valid: {executed}")
+        print(f"if_execute: {execution}")
+        print(f"---")
+    def eval_grid(self):
+        for y in range(self.grid.height):
+            for x in range(self.grid.width):
+                block = self.grid.get_block(x,y)
+                if block == BlockType.If:
+                    self.if_chain(x+1,y)
+
 class DevPlayer:
     def __init__(self, x:int, y:int, w:int, h:int) -> None:
         self.x = x
@@ -182,7 +222,7 @@ class DevPlayer:
         if add_self:
             return (x + self.x, y + self.y)
         return (x, y)
-    
+
     def move(self, direction: 'PlayerDir') -> None:
         match direction:
             case PlayerDir.Right:
@@ -243,6 +283,7 @@ class DevPlayer:
 font: pygame.font.Font
 grid: Grid
 player: DevPlayer
+process: GridProcessor
 indicator: pygame.Surface
 grid_size = (9,6)
 
@@ -250,29 +291,22 @@ def initialize(width: int, height: int):
     global font
     font = pygame.font.SysFont("Arial Black", 24)
 
-    global grid, player
+    global grid, player, process
     player = DevPlayer(1,2,*grid_size)
     grid = Grid(*grid_size, player)
     player.grid = grid
     grid.set_block(1,1,BlockType.If)
+    grid.set_block(2,1,BlockType.Num_1)
+    grid.set_block(3,1,BlockType.Plus)
+    grid.set_block(4,1,BlockType.Num_1)
+    grid.set_block(5,1,BlockType.Equal)
+    grid.set_block(6,1,BlockType.Num_2)
+    grid.set_block(2,2,BlockType.Coin)
+    grid.lock_block(2,2)
     grid.lock_block(1,1)
-    grid.set_block(2,1,BlockType.Glop)
-    grid.lock_block(2,1)
-    grid.set_block(2,2,BlockType.Death)
-    grid.set_block(3,2,BlockType.Equal)
-    grid.set_block(4,2,BlockType.Death)
-    grid.set_block(5,2,BlockType.Plus)
-    grid.set_block(6,2,BlockType.Minus)
-    
-    grid.set_block(2,3,BlockType.Num_0)
-    grid.set_block(3,3,BlockType.Num_1)
-    grid.set_block(4,3,BlockType.Num_2)
-    grid.set_block(5,3,BlockType.Num_3)
-    
-    grid.set_block(2,4,BlockType.Coin)
-    grid.set_block(3,4,BlockType.Spike)
-    
 
+    process = GridProcessor(grid)
+    
     global indicator
     indicator = pygame.transform.scale_by(pygame.image.load(dev_folder / "blocks" / "mode_dev.png"), 3)
 
@@ -282,6 +316,7 @@ def update(key: int):
         elif key == pygame.K_s : player.move(PlayerDir.Down)
         elif key == pygame.K_d : player.move(PlayerDir.Right)
         elif key == pygame.K_a : player.move(PlayerDir.Left)
+        elif key == pygame.K_e : process.eval_grid()
         elif key == pygame.K_UP    and player.grid_block(0,-1) != BlockType.Empty and player.grid_block(0,-1) != BlockType.No:
             player.selected = not player.selected
             player.select_dir = PlayerDir.Up

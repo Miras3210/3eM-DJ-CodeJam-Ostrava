@@ -1,21 +1,13 @@
 import pygame
 from enum import Enum, auto
+from pathlib import Path
 
-class BlockType(Enum):
-    AIR = auto()
-    GROUND = auto()
-    PLATFORM = auto()
-    SPIKE = auto()
-    DOOR = auto()
-    COIN = auto()
+import sys
+sys.path.append(str(Path(__file__).parent.parent / "src"))
+from platformer import BlockType, Block
 
 image_scale = 4
 block_size = 32 * image_scale
-
-class Block:
-    def __init__(self, block_type: 'BlockType') -> None:
-        self.type = block_type
-        self.texture: pygame.surface.Surface
 
 class Grid:
     def __init__(self, width: int, height: int) -> None:
@@ -45,8 +37,8 @@ class Grid:
 
         self.grid[y][x].type = block_type
 
-    def draw(self, win: pygame.surface.Surface, offsetx: int, width: int) -> None:
-        nsurf = pygame.Surface((width, win.get_height()), pygame.SRCALPHA)
+    def draw(self, win: pygame.surface.Surface, offsetx: int) -> None:
+        nsurf = pygame.Surface(win.get_size(), pygame.SRCALPHA)
 
         for y in range(self.height):
             for x in range(self.width):
@@ -164,7 +156,7 @@ while run:
         grid.set_block(mx, my, selected_material)
 
     window.fill((255, 255, 255))
-    grid.draw(window, offx, 1300)
+    grid.draw(window, offx)
     sel_bar()
 
     pygame.display.update()
