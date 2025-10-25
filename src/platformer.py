@@ -2,6 +2,7 @@ import pygame
 from pathlib import Path
 from enum import Enum, auto
 pygame.display.init()
+pygame.mixer.init()
 
 class BlockType(Enum):
     AIR = auto()
@@ -25,6 +26,9 @@ image_scale = 4
 block_size = 32 * image_scale
 adventure_dir = Path(__file__).parent.parent / "Textures" / "Adventure"
 char_dir = adventure_dir / "characters"
+sound_dir = Path(__file__).parent.parent / "Music"
+effect_dir = sound_dir / "SoudEffects"
+
 
 def _img_load_helper(img_path: Path) -> pygame.Surface:
     return pygame.transform.scale(pygame.image.load(img_path), (block_size, block_size))
@@ -42,6 +46,16 @@ class PlayerImages:
     Fall_Right = _img_load_helper(char_dir / "glop_right_fall.png")
     Fall_Left  = _img_load_helper(char_dir / "glop_left_fall.png")
     Land       = _img_load_helper(char_dir / "glop_short.png")
+
+pygame.mixer.music.set_volume(0.7)
+
+class SoundEffects:
+    walk     =pygame.mixer.music.load(effect_dir / "walk.wav")
+    fall     =pygame.mixer.music.load(effect_dir / "fall.wav")
+    death    =pygame.mixer.music.load(effect_dir / "death.wav")
+    jump     =pygame.mixer.music.load(effect_dir / "jump.wav")
+
+
 
 block_dir = adventure_dir / "blocks"
 
@@ -108,8 +122,14 @@ class Grid:
                     if x>0 and self.get_block(x+1, y) != BlockType.GROUND and self.get_block(x, y+1) != BlockType.GROUND:
                         self.grid[y][x].texture.blit(pygame.transform.rotate(BlockImages.grass_outer_corner,270), (0,0))
 
-                    if self.get_block(x-1, y-1) != BlockType.GROUND and self.get_block(x, y+1) == BlockType.GROUND:
+                    if self.get_block(x+1, y-1) != BlockType.GROUND and self.get_block(x, y-1) == BlockType.GROUND and self.get_block(x+1, y) == BlockType.GROUND:
                         self.grid[y][x].texture.blit(BlockImages.grass_inner_corner, (0,0))
+                    if self.get_block(x-1, y-1) != BlockType.GROUND and self.get_block(x, y-1) == BlockType.GROUND and self.get_block(x-1, y) == BlockType.GROUND:
+                        self.grid[y][x].texture.blit(pygame.transform.rotate(BlockImages.grass_inner_corner,90), (0,0))
+                    if self.get_block(x-1, y+1) != BlockType.GROUND and self.get_block(x, y+1) == BlockType.GROUND and self.get_block(x-1, y) == BlockType.GROUND:
+                        self.grid[y][x].texture.blit(pygame.transform.rotate(BlockImages.grass_inner_corner,180), (0,0))
+                    if self.get_block(x+1, y+1) != BlockType.GROUND and self.get_block(x, y+1) == BlockType.GROUND and self.get_block(x+1, y) == BlockType.GROUND:
+                        self.grid[y][x].texture.blit(pygame.transform.rotate(BlockImages.grass_inner_corner,270), (0,0))
 
                 if self.get_block(x, y) == BlockType.PLATFORM:
                     self.grid[y][x].texture.blit(BlockImages.platform, (0,0))
@@ -183,8 +203,11 @@ class Player:
         if keys[pygame.K_w] or keys[pygame.K_UP] or keys[pygame.K_SPACE]:
             if self.on_ground:
                 self.y_vel = -self.JUMP
-        if keys[pygame.K_a] or keys[pygame.K_LEFT]: self.x_vel -= self.SPEED
-        if keys[pygame.K_d] or keys[pygame.K_RIGHT]: self.x_vel += self.SPEED
+        if keys[pygame.K_a] or keys[pygame.K_LEFT]:
+            self.x_vel -= self.SPEED
+            
+        if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
+            self.x_vel += self.SPEED
 
     # velocity
         self.y_vel += gravity
@@ -207,7 +230,6 @@ class Player:
         else:
             self.x += int(self.x_vel)
             self.on_wall = False
-
         self.y_updated_rect = self.hitbox
         self.y_updated_rect.y += int(self.y_vel)
         for y, line in enumerate(self.grid.grid):
