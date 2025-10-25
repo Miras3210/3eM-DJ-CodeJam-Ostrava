@@ -121,9 +121,6 @@ def get_grid():
         BlockType.DOOR : "D",
         BlockType.COIN : "C"
     }
-    # n_grid = [[grid.grid[y][x].type.name for x in range(width)] for y in range(height)]
-    # with open("grid_file.json","w") as f:
-    #     json.dump(n_grid,f)
     end = width-1
     for _ in range(width):
         for y in range(height):
@@ -133,7 +130,7 @@ def get_grid():
     end+=1
     n_grid = []
     with open("grid_file.grid","w") as f:
-        f.write(f"{end};{height}")
+        f.write(f"{end};{height}\n")
         for x in range(end):
             f.write("".join([conversion.get(grid.grid[y][x].type, " ") for y in range(height)]))
             f.write("\n")
