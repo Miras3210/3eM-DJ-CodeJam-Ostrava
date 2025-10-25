@@ -57,6 +57,8 @@ class BlockImages:
     grass_block        = _img_load_helper(block_dir / "grass_block.png")
     platform           = _img_load_helper(block_dir / "platform.png")
     spikes             = _img_load_helper(block_dir / "spikes.png")
+    coin               = _img_load_helper(block_dir / "Coin.png")
+    door               = _img_load_helper(block_dir / "door.png")
 
 
 class Block:
@@ -83,13 +85,35 @@ class Grid:
             for x in range(self.width):
                 if self.grid[y][x].type == BlockType.GROUND:
                     # pygame.draw.rect(win, (0,0,0), (x*block_size,y*block_size,block_size,block_size))
-                    win.blit(BlockImages.grass_block, (x*block_size,y*block_size,block_size,block_size))
+                    win.blit(BlockImages.dirt_block, (x*block_size,y*block_size,block_size,block_size))
+                    if y>0 and self.grid[y-1][x].type != BlockType.GROUND:
+                       win.blit(BlockImages.grass, (x*block_size,y*block_size,block_size,block_size))
+                    if x>0 and self.grid[y][x-1].type != BlockType.GROUND:
+                       win.blit(pygame.transform.rotate(BlockImages.grass,90), (x*block_size,y*block_size,block_size,block_size))
+                    if x>0 and self.grid[y][x-1].type != BlockType.GROUND and y>0 and self.grid[y-1][x].type != BlockType.GROUND:
+                        win.blit(pygame.transform.rotate(BlockImages.grass_outer_corner,90), (x*block_size,y*block_size,block_size,block_size))
+
+                    if y>0 and self.grid[y+1][x].type != BlockType.GROUND:
+                       win.blit(pygame.transform.rotate(BlockImages.grass,180), (x*block_size,y*block_size,block_size,block_size))
+                    if x>0 and self.grid[y][x+1].type != BlockType.GROUND:
+                       win.blit(pygame.transform.rotate(BlockImages.grass,270), (x*block_size,y*block_size,block_size,block_size))
+                    if x>0 and self.grid[y][x+1].type != BlockType.GROUND and y>0 and self.grid[y+1][x].type != BlockType.GROUND:
+                        win.blit(pygame.transform.rotate(BlockImages.grass_outer_corner,270), (x*block_size,y*block_size,block_size,block_size))
+
+                    if y>0 and self.grid[y-1][x-1].type != BlockType.GROUND and x>0 and self.grid[y+1][x].type == BlockType.GROUND:
+                       win.blit(BlockImages.grass_inner_corner, (x*block_size,y*block_size,block_size,block_size))
 
                 if self.grid[y][x].type == BlockType.PLATFORM:
                     win.blit(BlockImages.platform, (x*block_size,y*block_size,block_size,block_size))
                 
                 if self.grid[y][x].type == BlockType.SPIKE:
                     win.blit(BlockImages.spikes, (x*block_size,y*block_size,block_size,block_size))
+
+                if self.grid[y][x].type == BlockType.COIN:
+                    win.blit(BlockImages.coin, (x*block_size,y*block_size,block_size,block_size))
+
+                if self.grid[y][x].type == BlockType.DOOR:
+                    win.blit(BlockImages.door, (x*block_size,y*block_size,block_size,block_size))
 
                 pygame.draw.rect(win, (0,0,0), (x*block_size,y*block_size,block_size,block_size), 2)
 
