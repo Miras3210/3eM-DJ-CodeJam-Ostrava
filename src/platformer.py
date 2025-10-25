@@ -5,7 +5,8 @@ from enum import Enum, auto
 pygame.display.init()
 pygame.mixer.init()
 
-theme = "Music/Musik/AmbientPlatformer.mp3"
+music_dir = Path(__file__).parent.parent / "Music" / "Musik"
+theme = music_dir / "AmbientPlatformer.mp3"
 pygame.mixer.music.load(theme)
 pygame.mixer.music.set_volume(0.2)
 pygame.mixer.music.play(-1)
@@ -307,7 +308,7 @@ font = pygame.font.SysFont("Arial Black", 24)
 player: Player
 grid: Grid
 indicator: pygame.Surface
-level = 4
+level = 1
 gravity = 1.5
 
 camx = 0
