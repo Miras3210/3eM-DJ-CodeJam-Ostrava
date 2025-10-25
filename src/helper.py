@@ -1,5 +1,6 @@
 import pygame
 import pathlib
+pygame.init()
 
 # Loading images
 base = pathlib.Path(__file__).parent.parent / "Textures" / "Misc"
@@ -20,6 +21,9 @@ images: list[pygame.surface.Surface] = [
 RED: tuple[int, int, int] = (255, 0, 0)
 BLACK: tuple[int, int, int] = (0, 0, 0)
 WHITE: tuple[int, int, int] = (255, 255, 255)
+
+# Font:
+FONT = pygame.font.SysFont("Arialblack", 46)
 
 
 class Button:
@@ -75,7 +79,7 @@ exit_button: Button
 #left_arrow_button: Button
 #right_arrow_button: Button
 
-button_scale: int = 3
+button_scale: float = 2.5
 button_width: int = exit_button_image.get_width()*button_scale
 button_height: int = button_width
 button_screen_offset: int = 10
@@ -84,9 +88,11 @@ slides: list['Slide'] = []
 slide_index: int = 0
 last_slide_index: int = slide_index
 slide_animation_speed: int = 40
+slide_position_text: pygame.surface.Surface
+
 
 def initialize(width: int, height: int) -> None:
-    global exit_button, images
+    global exit_button, images, slide_position_text
 
     exit_button = Button(
         width - button_width - button_screen_offset,
@@ -95,6 +101,8 @@ def initialize(width: int, height: int) -> None:
         button_height,
         exit_button_image
     )
+
+    slide_position_text = FONT.render(f"{slide_index+1}/{len(slides)}", 1, (255, 255, 255))
 
     # left_arrow_button = Button(
     #    button_screen_offset,
@@ -117,7 +125,7 @@ def initialize(width: int, height: int) -> None:
         
 
 def update(window: pygame.surface.Surface) -> str:
-    global slide_index, last_slide_index
+    global slide_index, last_slide_index, slide_position_text
     if exit_button.cursor_collision():
         pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_HAND)
     else:
@@ -139,6 +147,8 @@ def update(window: pygame.surface.Surface) -> str:
         slides[slide_index].x = max(0, slides[slide_index].x-slide_animation_speed)
         slides[last_slide_index].x = max(0 - window.get_width(), slides[last_slide_index].x-slide_animation_speed)
 
+    slide_position_text = FONT.render(f"{slide_index+1}/{len(slides)}", 1, (255, 255, 255))
+
     if exit_button.update(): return "exit"
     return ""
 
@@ -157,6 +167,7 @@ def draw(window: pygame.surface.Surface) -> None:
         slides[slide_index].draw(window)
 
     exit_button.draw(window)
+    window.blit(slide_position_text, (button_screen_offset*2, button_screen_offset))
     #left_arrow_button.draw(window)
     #right_arrow_button.draw(window)
 
