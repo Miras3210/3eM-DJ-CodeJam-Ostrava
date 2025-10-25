@@ -286,6 +286,7 @@ class Player:
                 if block.type == BlockType.DOOR and self.hitbox.colliderect((x*block_size, y*block_size, block_size, block_size)):
                     self.win = True
                 if block.type == BlockType.COIN and self.hitbox.colliderect((x*block_size+20, y*block_size+20, block_size-40, block_size-40)):
+                    self.grid.set_block(x,y, BlockType.COIN)
                     self.coin_counter += 1
                 if (block.type == BlockType.GROUND and self.y_updated_rect.colliderect((x*block_size, y*block_size, block_size, block_size))) \
                   or (self.y_vel > 0 and self.hitbox.bottom <= y*block_size and block.type == BlockType.PLATFORM and self.y_updated_rect.colliderect((x*block_size, y*block_size, block_size, 36))):
@@ -390,9 +391,9 @@ def draw(win: pygame.surface.Surface) -> None:
 
     win.blit(indicator, (10,10))
     
-    win.blit(font.render(f"1: {player.afk_counter}", 1, (0,0,0)), (10, 30))
-    win.blit(font.render(f"2: {player.on_ground}", 1, (0,0,0)), (10, 50))
-    win.blit(font.render(f"3: {player.y_vel}", 1, (0,0,0)), (10, 70))
+    # win.blit(font.render(f"1: {player.afk_counter}", 1, (0,0,0)), (10, 30))
+    # win.blit(font.render(f"2: {player.on_ground}", 1, (0,0,0)), (10, 50))
+    # win.blit(font.render(f"3: {player.y_vel}", 1, (0,0,0)), (10, 70))
 
 def update(key: int, screen_width: int, param: dict) -> str:
     global camx
