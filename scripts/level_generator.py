@@ -170,6 +170,7 @@ while run:
             if event.key == pygame.K_ESCAPE:
                 run = False
             elif event.key == pygame.K_s:
-                get_grid()
+                run = False
+get_grid()
 
 pygame.quit()
