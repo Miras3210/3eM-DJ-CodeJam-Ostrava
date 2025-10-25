@@ -1,4 +1,4 @@
-import pygame, json
+import pygame
 from enum import Enum, auto
 
 class BlockType(Enum):
