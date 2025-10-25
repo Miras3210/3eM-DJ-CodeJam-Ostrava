@@ -338,6 +338,9 @@ gravity = 1.5
 
 camx = 0
 
+instructions_text: pygame.surface.Surface
+text_offset: int = 20
+
 grid_legend = {
     "A" : BlockType.AIR,
     "G" : BlockType.GROUND,
@@ -370,7 +373,8 @@ def initialize(width: int, height: int):
         if isinstance(img, pygame.Surface):
             setattr(BlockImages, attr, img.convert_alpha())
 
-    global player, grid
+    global player, grid, instructions_text
+    instructions_text = font.render("Press TAB to change MODE", 1, (0, 0, 0))
 
     grid = Grid(100,7)
     load_level(level, grid)
@@ -393,6 +397,8 @@ def draw(win: pygame.surface.Surface) -> None:
     win.blit(font.render(f"1: {player.afk_counter}", 1, (0,0,0)), (10, 30))
     win.blit(font.render(f"2: {player.on_ground}", 1, (0,0,0)), (10, 50))
     win.blit(font.render(f"3: {player.y_vel}", 1, (0,0,0)), (10, 70))
+    win.blit(instructions_text, (win.get_width()-instructions_text.get_width()-text_offset*2, text_offset))
+
 
 def update(key: int, screen_width: int, param: dict) -> str:
     global camx
