@@ -70,6 +70,8 @@ def main():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     run = False
+                if event.key == pygame.K_F11:
+                    pygame.display.toggle_fullscreen()
                 key = event.key
 
 
