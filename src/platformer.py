@@ -172,6 +172,7 @@ class Player:
 
         self.on_wall, self.on_ground = False, False
         self.alive = True
+        self.win = False
 
         self.afk_counter = 0
         self.on_ground_counter = 0
@@ -255,6 +256,8 @@ class Player:
             for x, block in enumerate(line):
                 if block.type == BlockType.SPIKE and self.hitbox.colliderect((x*block_size, y*block_size+82, block_size, 36)):
                     self.alive = False
+                if block.type == BlockType.DOOR and self.hitbox.colliderect((x*block_size, y*block_size, block_size, block_size)):
+                    self.win = True
                 if (block.type == BlockType.GROUND and self.y_updated_rect.colliderect((x*block_size, y*block_size, block_size, block_size))) \
                   or (self.y_vel > 0 and self.hitbox.bottom <= y*block_size and block.type == BlockType.PLATFORM and self.y_updated_rect.colliderect((x*block_size, y*block_size, block_size, 36))):
                     if self.hitbox.bottom <= y*block_size:
@@ -302,7 +305,7 @@ font = pygame.font.SysFont("Arial Black", 24)
 player: Player
 grid: Grid
 indicator: pygame.Surface
-level = 4
+level = 1
 gravity = 1.5
 
 camx = 0
@@ -371,6 +374,7 @@ def update(key: int, screen_width: int) -> str:
     camx = int(min(max(0, (camx+player.x-player.width*3)/2), grid.width*block_size - screen_width))
 
     if not player.alive: return "bsod"
+    if player.win: return "next"
     if key == pygame.K_TAB: return "switch"
     return ""
 

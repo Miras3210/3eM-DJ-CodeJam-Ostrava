@@ -46,6 +46,9 @@ def main():
                 if ev == "bsod":
                     bsod.ticker = 0
                     scene = Scene.BSOD
+                if ev == "next":
+                    platformer.level += 1
+                    platformer.initialize(100,7)
                 if ev == "switch": scene = Scene.DEV
                 platformer.draw(window)
             case Scene.DEV:
