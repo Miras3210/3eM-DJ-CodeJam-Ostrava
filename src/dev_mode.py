@@ -281,8 +281,12 @@ def update(key: int):
             player.tick = 0
             player.direction = PlayerDir.Idle
 
-def draw_game(window: pygame.Surface, width:int, height:int):
+    if key == pygame.K_TAB: return "switch"
+    return ""
+
+def draw_game(window: pygame.Surface):
     window.fill((44,47,63))
+    width, height = window.get_size()
     # pygame.draw.rect(window, (0,0,0), (0,0,width*0.05,height))
     # dev mode indicator
     window.blit(indicator, (10,10))
@@ -302,7 +306,7 @@ def main(window: pygame.Surface):
         update(key)
         key = 0
 
-        draw_game(window, width, height)
+        draw_game(window)
         pygame.display.update()
         clock.tick(60)
         for event in pygame.event.get():

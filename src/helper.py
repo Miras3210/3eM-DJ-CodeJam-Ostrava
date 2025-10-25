@@ -16,6 +16,7 @@ images: list[pygame.surface.Surface] = [
 # Colors:
 RED: tuple[int, int, int] = (255, 0, 0)
 BLACK: tuple[int, int, int] = (0, 0, 0)
+WHITE: tuple[int, int, int] = (255, 255, 255)
 
 
 class Button:
@@ -43,20 +44,21 @@ class Button:
     def cursor_collision(self) -> bool:
         return self.rect.collidepoint(pygame.mouse.get_pos())
 
-    def update(self) -> None:
+    def update(self) -> bool:
         if self.cursor_collision():
             self.scale = min(self.max_hover_scale, self.scale+0.02)
+            return pygame.mouse.get_pressed()[0]
         else:
             self.scale = max(1, self.scale-0.02)
+        return False
 
-    def button_response(self) -> bool:
-        if self.cursor_collision() and pygame.mouse.get_pressed()[0] and not self.response_sent:
-            self.response_sent = True
-            return True
-        elif not pygame.mouse.get_pressed()[0]:
-            self.response_sent = False
-            return False
-        
+    # def button_response(self) -> bool:
+    #     if self.cursor_collision() and pygame.mouse.get_pressed()[0] and not self.response_sent:
+    #         self.response_sent = True
+    #         return True
+    #     elif not pygame.mouse.get_pressed()[0]:
+    #         self.response_sent = False
+    #     return False
 
 class Slide:
     def __init__(self, x: int, y: int, width: int, height: int, image: pygame.surface.Surface) -> None:
@@ -77,11 +79,10 @@ button_width: int = 64*button_scale
 button_height: int = button_width
 button_screen_offset: int = 26
 
-slides: list = []
+slides: list['Slide'] = []
 slide_index: int = 0
 last_slide_index: int = slide_index
 slide_animation_speed: int = 40
-        
 
 def initialize(width: int, height: int) -> None:
     global exit_button, images
@@ -94,33 +95,33 @@ def initialize(width: int, height: int) -> None:
         pygame.Surface((1, 1))
     )
 
-    #left_arrow_button = Button(
-       # button_screen_offset,
-        #height//2 - button_height//2,
-        #button_width,
-        #button_height,
-        ##pygame.Surface((1, 1))
-    #)
+    # left_arrow_button = Button(
+    #    button_screen_offset,
+    #     height//2 - button_height//2,
+    #     button_width,
+    #     button_height,
+    #     pygame.Surface((1, 1))
+    # )
 
-    #right_arrow_button = Button(
-        #width - button_width - button_screen_offset,
-        #height//2 - button_height//2,
-        #button_width,
-        #button_height,
-        #pygame.Surface((1, 1))
-    #)
+    # right_arrow_button = Button(
+    #     width - button_width - button_screen_offset,
+    #     height//2 - button_height//2,
+    #     button_width,
+    #     button_height,
+    #     pygame.Surface((1, 1))
+    # )
 
     for image in images:
         slides.append(Slide(0, 0, width, height, image))
         
 
-def update(window: pygame.surface.Surface) -> None :
+def update(window: pygame.surface.Surface) -> str:
     global slide_index, last_slide_index
-    if any([exit_button.cursor_collision()]):
+    if exit_button.cursor_collision():
         pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_HAND)
     else:
         pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
-        
+
     if pygame.key.get_pressed()[pygame.K_RIGHT] and slide_index < (len(slides) -1) and slides[slide_index].x == 0:
         last_slide_index = slide_index
         slide_index += 1
@@ -137,23 +138,23 @@ def update(window: pygame.surface.Surface) -> None :
         slides[slide_index].x = max(0, slides[slide_index].x-slide_animation_speed)
         slides[last_slide_index].x = max(0 - window.get_width(), slides[last_slide_index].x-slide_animation_speed)
 
-
-def report_activity() -> str:
-    if exit_button.button_response():
-        return "help_exit"
+    if exit_button.update(): return "exit"
     return ""
+
+# def report_activity() -> str:
+#     if exit_button.button_response():
+#         return "help_exit"
+#     return ""
 
 
 def draw(window: pygame.surface.Surface) -> None:
-    window.fill(BLACK)
+    window.fill(WHITE)
     if slides[slide_index].x != 0:
         slides[last_slide_index].draw(window)
         slides[slide_index].draw(window)
     else:
         slides[slide_index].draw(window)
 
-    #slides[slide_index].draw(window)
-    
     exit_button.draw(window)
     #left_arrow_button.draw(window)
     #right_arrow_button.draw(window)
@@ -178,6 +179,6 @@ def main(window: pygame.surface.Surface):
                     run = False
 
 if __name__ == '__main__':
-    window = pygame.display.set_mode((1600,900), pygame.FULLSCREEN)
+    window = pygame.display.set_mode((1600,900))
     main(window)
     pygame.quit()
