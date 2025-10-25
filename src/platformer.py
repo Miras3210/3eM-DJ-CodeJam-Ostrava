@@ -183,6 +183,7 @@ class Player:
         self.afk_counter = 0
         self.on_ground_counter = 0
         self.move_counter = 0
+        self.coin_counter = 0
 
         self.SPEED = 3
         self.JUMP = 30
@@ -264,6 +265,8 @@ class Player:
                     self.alive = False
                 if block.type == BlockType.DOOR and self.hitbox.colliderect((x*block_size, y*block_size, block_size, block_size)):
                     self.win = True
+                if block.type == BlockType.COIN and self.hitbox.colliderect((x*block_size+20, y*block_size+20, block_size-40, block_size-40)):
+                    self.coin_counter += 1
                 if (block.type == BlockType.GROUND and self.y_updated_rect.colliderect((x*block_size, y*block_size, block_size, block_size))) \
                   or (self.y_vel > 0 and self.hitbox.bottom <= y*block_size and block.type == BlockType.PLATFORM and self.y_updated_rect.colliderect((x*block_size, y*block_size, block_size, 36))):
                     if self.hitbox.bottom <= y*block_size:
