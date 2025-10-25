@@ -1,6 +1,13 @@
 import pygame
 from enum import Enum, auto
 import pathlib
+pygame.mixer.init()
+
+theme = "Music/Musik/AmbientDeveloper.wav"
+pygame.mixer.music.load(theme)
+pygame.mixer.music.set_volume(0.2)
+pygame.mixer.music.play(-1)
+
 
 class BlockType(Enum):
     Air = auto()
@@ -279,6 +286,7 @@ class DevPlayer:
                     self.select_dir = PlayerDir.Down
             case _:
                 ...
+
 
 font: pygame.font.Font
 grid: Grid
