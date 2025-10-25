@@ -3,12 +3,6 @@ from enum import Enum, auto
 import pathlib
 pygame.mixer.init()
 
-theme = "Music/Musik/AmbientDeveloper.wav"
-pygame.mixer.music.load(theme)
-pygame.mixer.music.set_volume(0.2)
-pygame.mixer.music.play(-1)
-
-
 class BlockType(Enum):
     Air = auto()
     Arrow_right = auto()
@@ -180,25 +174,38 @@ class GridProcessor:
                     executed = not executed
             except Exception:
                 executed = False
+        rdata = {}
         if execution and executed:
-            if execution[0] == "Coin":
-                return {"coin_enable" : True}
-            if execution[0] == "Open":
-                return {"gate_open" : True}
-            if execution[0] == "Close":
-                return {"gate_open" : False}
+            for ex in execution:
+                if ex == "Coin":
+                    rdata.update({"coin_enable" : True})
+                if ex == "Open":
+                    rdata.update({"gate_open" : True})
+                if ex == "Close":
+                    rdata.update({"gate_open" : False})
 
         print(f"If-valid: {executed}")
         print(f"if_execute: {execution}")
         print(f"---")
-        return {}
+        return rdata
     def eval_grid(self):
         data = {}
+        under_if = False
         for y in range(self.grid.height):
             for x in range(self.grid.width):
                 block = self.grid.get_block(x,y)
+                if block == BlockType.Empty:
+                    under_if = False
+                    continue
+                if under_if:
+                    continue
                 if block == BlockType.If:
                     data.update(self.if_chain(x+1,y))
+                
+                if self.grid.get_block(x-1,y-1) == BlockType.If:
+                    under_if = True
+                    continue
+                
         print(data)
 
 class DevPlayer:
