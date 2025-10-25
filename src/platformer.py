@@ -29,7 +29,7 @@ adventure_dir = Path(__file__).parent.parent / "Textures" / "Adventure"
 char_dir = adventure_dir / "characters"
 sound_dir = Path(__file__).parent.parent / "Music"
 effect_dir = sound_dir / "SoudEffects"
-
+music_dir = sound_dir / "Musik"
 
 def _img_load_helper(img_path: Path) -> pygame.Surface:
     return pygame.transform.scale(pygame.image.load(img_path), (block_size, block_size))
@@ -57,7 +57,9 @@ class SoundEffects:
     jump     =pygame.mixer.Sound(effect_dir / "jump.wav")
 
 class Music:
-    pass
+    developer   = pygame.mixer.Sound(music_dir / "AmbientDeveloper.wav")
+    menu        = pygame.mixer.Sound(music_dir / "AmbientMenu.wav")
+    platformer  = pygame.mixer.Sound(music_dir / "AmbientPlatformer.mp3")
 
 block_dir = adventure_dir / "blocks"
 
@@ -287,7 +289,9 @@ class Player:
             SoundEffects.walk.play()
             self.move_counter = -10
             
-        if self.on_ground_counter < 10 and abs(self.x_vel) < 5: pass
+        if self.on_ground_counter == 1:
+            SoundEffects.fall.set_volume(0.1)
+            SoundEffects.fall.play()
 
 ################################################################################################################
 
