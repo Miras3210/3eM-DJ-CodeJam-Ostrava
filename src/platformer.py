@@ -228,7 +228,7 @@ class Player:
         
         if self.y > self.VOID:
             self.alive = False
-            self.y_vel = 0
+            # self.y_vel = 0
         
         if self.y_vel == 0 and self.x_vel == 0:
             self.afk_counter+= 1
@@ -302,14 +302,16 @@ def draw(win: pygame.surface.Surface) -> None:
     player.draw(win, camx)
 
     win.blit(indicator, (10,10))
+    
+    win.blit(font.render(f"y: {player.y}", 1, (0,0,0)), (10, 30))
+    win.blit(font.render(f"alive: {player.alive}", 1, (0,0,0)), (10, 50))
 
-def update(key: int) -> str:
+def update(key: int, screen_width: int) -> str:
     global camx
     keys = pygame.key.get_pressed()
     player.update(keys)
 
-    camx = int(min(max(0, (camx+player.x-player.width*3)/2), 0))
-    
+    camx = int(min(max(0, (camx+player.x-player.width*3)/2), grid.width*block_size - screen_width))
 
     if not player.alive: return "bsod"
     if key == pygame.K_TAB: return "switch"
@@ -323,7 +325,7 @@ def main(window: pygame.surface.Surface):
     initialize(width, height)
     key = 0
     while run:
-        update(key)
+        update(key, width)
         key = 0
 
         draw(window)

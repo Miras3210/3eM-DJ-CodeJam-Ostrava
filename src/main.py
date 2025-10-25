@@ -42,7 +42,7 @@ def main():
                 if ev == "exit": scene = Scene.MAIN_MENU
                 helper.draw(window)
             case Scene.GAME:
-                ev = platformer.update(key)
+                ev = platformer.update(key, width)
                 if ev == "bsod":
                     bsod.ticker = 0
                     scene = Scene.BSOD
