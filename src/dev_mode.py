@@ -401,10 +401,13 @@ player: DevPlayer
 processor: GridProcessor
 indicator: pygame.Surface
 grid_size = (9,6)
+instructions_text: pygame.surface.Surface
+text_offset: int = 20
 
 def initialize(width: int, height: int):
-    global font
+    global font, instructions_text
     font = pygame.font.SysFont("Arial Black", 24)
+    instructions_text = font.render("Press TAB to change MODE", 1, (40, 96, 163))
 
     global grid, player, processor
     player = DevPlayer(1,2,*grid_size)
@@ -471,6 +474,7 @@ def draw_game(window: pygame.Surface):
 
     # draw grid
     grid.draw(window, int(width*0.05), indicator.get_height() + 20, 0, 0)
+    window.blit(instructions_text, (width-instructions_text.get_width()-text_offset*2, text_offset))
 
 def main(window: pygame.Surface):
     pygame.font.init()
