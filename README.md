@@ -46,14 +46,14 @@ deactivate
 
 # Running the project
 ```shell
-python main.py
+python src/main.py
 ```
 
 If you run into any issues, please make sure to report them.
 
 # Contributors
-- Mira (https://github.com/Miras3210)
-- xxx https://github.com/alvareez
-- xxx https://github.com/LeoNex28
-- xxx https://github.com/E422Real
-- xxx
+- https://github.com/Miras3210
+- https://github.com/alvareez
+- https://github.com/LeoNex28
+- https://github.com/E422Real
+- https://github.com/DejvDajo
