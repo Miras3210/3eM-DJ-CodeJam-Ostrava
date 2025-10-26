@@ -1,10 +1,10 @@
-# 3eM-DJ-CodeJam-Ostrava
-3eM-DJ team for the Ostrava CodeJam 10/2025
+# Code Shift
+A game named Code Shift fom the 3eM-DJ team for the Ostrava CodeJam 10/2025
 
 # About
+a game where you code your way through the levels
 
 # Setup
-
 1. create a virtual enviroment
 ```shell
 python -m venv .venv
@@ -47,6 +47,11 @@ deactivate
 # Running the project
 ```shell
 python src/main.py
+```
+
+or the exe
+```shell
+./main.exe
 ```
 
 If you run into any issues, please make sure to report them.
