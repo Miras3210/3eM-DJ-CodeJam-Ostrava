@@ -4,6 +4,17 @@ A game named Code Shift fom the 3eM-DJ team for the Ostrava CodeJam 10/2025
 # About
 a game where you code your way through the levels
 
+# Controls
+ESC - exit game
+TAB - switch between gamemodes
+## platformer mode:
+w,a,s,d, arrow keys - movement
+space - jump
+## dev mode
+w,a,s,d - movement
+space - auto select block
+arrow keys - specific block selection
+
 # Setup
 1. create a virtual enviroment
 ```shell
