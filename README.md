@@ -4,24 +4,36 @@ A game named Code Shift fom the 3eM-DJ team for the Ostrava CodeJam 10/2025
 # About
 a game where you code your way through the levels
 
+# How to run
+1. open the `dist/` folder
+2. run `game.exe`
+
+or run _this_ in shell
+```shell
+./dist/game.exe
+```
+
 # Controls
-ESC - exit game
+`ESC` - exit game
 
-TAB - switch between gamemodes
+`TAB` - switch between gamemodes
 
-## platformer mode:
-w,a,s,d, arrow keys - movement
+### --platformer mode--
+`wasd & arrow keys` - movement
 
-space - jump
+`space` - jump
 
-## dev mode
-w,a,s,d - movement
+### --dev mode--
+`wasd` - movement
 
-space - auto select block
+`space` - auto select block (depending on direction)
 
-arrow keys - specific block selection
+`arrow keys` - specific block selection
 
-# Setup
+# SOURCE BUILD
+**NOTE:** this is only for development and if you'd like to run the project yourself
+
+## Setup
 1. create a virtual enviroment
 ```shell
 python -m venv .venv
@@ -61,17 +73,19 @@ pip install -r requirements.txt
 deactivate
 ```
 
-# Running the project
+## Running the project
 ```shell
 python src/main.py
 ```
 
-or the exe
+### Pyinstaller build
+This step is not necessary at all<br>
+_note: needs to have pyinstaler installed_
 ```shell
-./main.exe
+pyinstaller src/main.py --add-data "Textures;Textures" --add-data "Music;Music" --add-data "Levels;Levels"
 ```
 
-If you run into any issues, please make sure to report them.
+**If you run into any issues, please make sure to report them.**
 
 # Contributors
 - https://github.com/Miras3210

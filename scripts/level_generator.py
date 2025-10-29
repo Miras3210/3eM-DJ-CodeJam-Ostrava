@@ -4,7 +4,21 @@ from pathlib import Path
 
 import sys
 sys.path.append(str(Path(__file__).parent.parent / "src"))
-from platformer import BlockType, Block
+
+class Block:
+    def __init__(self, block_type: 'BlockType') -> None:
+        self.type = block_type
+        # self.texture: pygame.surface.Surface = BlockImages.air.copy()
+
+class BlockType(Enum):
+    AIR = auto()
+    GROUND = auto()
+    PLATFORM = auto()
+    SPIKE = auto()
+    COIN = auto()
+    DOOR = auto()
+    NO = auto()
+
 
 image_scale = 4
 block_size = 32 * image_scale

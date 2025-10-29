@@ -2,7 +2,6 @@ import pygame
 from enum import Enum, auto
 import pathlib
 from location_helper import project_root
-pygame.mixer.init()
 
 class BlockType(Enum):
     Air = auto()
