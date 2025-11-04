@@ -15,7 +15,7 @@ def initialize(width:int, height:int) -> None:
 def update(key: int) -> str:
     global ticker
     ticker+= 1
-    if ticker > 300 or key == pygame.K_SPACE:
+    if ticker > 300 or key:
         return "exit"
     return ""
 

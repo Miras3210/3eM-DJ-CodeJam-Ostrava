@@ -40,7 +40,7 @@ def main():
     dev_mode.initialize(width, height)
     platformer.initialize(width, height)
     bsod.initialize(width, height)
-    
+
     param = {}
 
     key = 0
@@ -92,7 +92,7 @@ def main():
                 ev = bsod.update(key)
                 if ev == "exit":
                     platformer.initialize(width, height)
-                    dev_mode.initialize(width, height)
+                    # dev_mode.initialize(width, height)
                     scene = Scene.GAME
                 bsod.draw(window)
         key = 0
@@ -104,8 +104,12 @@ def main():
             if event.type == pygame.QUIT:
                 run = False
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    run = False
+                if event.key == pygame.K_ESCAPE and scene != Scene.MAIN_MENU:
+                    pygame.mixer.music.stop()
+                    pygame.mixer.music.load(menu_theme)
+                    pygame.mixer.music.set_volume(0.2)
+                    pygame.mixer.music.play(-1)
+                    scene = Scene.MAIN_MENU
                 if event.key == pygame.K_F11:
                     pygame.display.toggle_fullscreen()
                 key = event.key

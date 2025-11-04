@@ -269,7 +269,7 @@ class Player:
             for x, block in enumerate(line):
                 if (block.type == BlockType.GROUND and self.x_updated_rect.colliderect((x*block_size, y*block_size, block_size, block_size))) \
                     or (block.type == BlockType.PLATFORM and self.x_updated_rect.colliderect((x*block_size, y*block_size, block_size, 36))) \
-                    or (self.x_updated_rect.x < 0):
+                    or (self.x_updated_rect.x < 0) or (self.x_updated_rect.right > grid.width*block_size):
                     self.x_vel = 0
                     self.on_wall = True
                     break
@@ -389,18 +389,19 @@ def initialize(width: int, height: int):
     indicator = pygame.transform.scale_by(pygame.image.load(adventure_dir / "blocks" / "mode_game.png"), 3)
 
 
-def draw(win: pygame.surface.Surface) -> None:
+def draw(win: pygame.surface.Surface, debug: bool = False) -> None:
     win.fill((255,255,255))
 
     grid.draw(win, camx)
     player.draw(win, camx)
 
     win.blit(indicator, (10,10))
-    
-    win.blit(font.render(f"1: {player.afk_counter}", 1, (0,0,0)), (10, 30))
-    win.blit(font.render(f"2: {player.on_ground}", 1, (0,0,0)), (10, 50))
-    win.blit(font.render(f"3: {player.y_vel}", 1, (0,0,0)), (10, 70))
     win.blit(instructions_text, (win.get_width()-instructions_text.get_width()-text_offset*2, text_offset))
+    
+    if debug:
+        win.blit(font.render(f"1: {player.afk_counter}", 1, (0,0,0)), (10, 30))
+        win.blit(font.render(f"2: {player.on_ground}", 1, (0,0,0)), (10, 50))
+        win.blit(font.render(f"3: {player.y_vel}", 1, (0,0,0)), (10, 70))
 
 
 def update(key: int, screen_width: int, param: dict) -> str:
