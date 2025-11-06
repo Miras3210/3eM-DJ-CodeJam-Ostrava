@@ -1,17 +1,16 @@
 # Code Shift
-A game named Code Shift fom the 3eM-DJ team for the Ostrava CodeJam 10/2025
+The Ostrava **GameJam** game project called **Code Shift** (from the 3eM-DJ team &copy;2025)
 
 # About
-a game where you code your way through the levels
+A simple game where you combine platformer and coding to find a way through the levels.
+But don't worry, the "coding" part is very simple.
 
 # How to run
-1. open the `dist/` folder
-2. run `game.exe`
-
-or run _this_ in shell
-```shell
-./dist/game.exe
-```
+1. install a built release from the releases page (add /releases to the web url)
+2. extract it from a zip folder
+3. run game.exe
+- you may get a warning "unsafe application". that means it does not have a windows license.
+- if you want to avoid this build it from the source (scroll down for source build)
 
 # Controls
 `ESC` - exit game
