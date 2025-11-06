@@ -77,11 +77,9 @@ class Slide:
 
 
 exit_button: Button
-#left_arrow_button: Button
-#right_arrow_button: Button
 
 button_scale: float = 2.5
-button_width: int = exit_button_image.get_width()*button_scale
+button_width: int = int(exit_button_image.get_width()*button_scale)
 button_height: int = button_width
 button_screen_offset: int = 10
 
